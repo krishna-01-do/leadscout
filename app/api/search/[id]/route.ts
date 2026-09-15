@@ -1,39 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@/lib/supabase/server";
+import { getSearchResults, recoverSearch } from "@/lib/services/search-service";
+import { requireUser } from "@/lib/supabase/server";
+import { z } from "zod";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = createServerClient();
+    const user = await requireUser(request);
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const parsedId = z.string().uuid().safeParse((await params).id);
+    if (!parsedId.success) return NextResponse.json({ error: "Invalid search ID" }, { status: 400 });
 
-    const authHeader = request.headers.get("authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const token = authHeader.replace("Bearer ", "");
-    const {
-      data: { user },
-    } = await supabase.auth.getUser(token);
-
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { data: search } = await supabase
-      .from("searches")
-      .select("*")
-      .eq("id", params.id)
-      .eq("user_id", user.id)
-      .maybeSingle();
-
-    if (!search) {
-      return NextResponse.json({ error: "Search not found" }, { status: 404 });
-    }
-
-    return NextResponse.json({ search });
+    await recoverSearch(parsedId.data, user.id);
+    const { search } = await getSearchResults(parsedId.data, user.id);
+    if (!search) return NextResponse.json({ error: "Search not found" }, { status: 404 });
+    return NextResponse.json({ search }, { headers: { "Cache-Control": "private, no-store" } });
   } catch {
     return NextResponse.json({ error: "Failed to fetch search" }, { status: 500 });
   }

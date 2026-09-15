@@ -19,24 +19,25 @@ const HIGH_RATING_THRESHOLD = 4.5;
 const HIGH_REVIEW_THRESHOLD = 100;
 const LOW_REVIEW_THRESHOLD = 10;
 
+function containsEither(left: string | null | undefined, right: string | null | undefined) {
+  const a = left?.trim().toLowerCase();
+  const b = right?.trim().toLowerCase();
+  return Boolean(a && b && (a.includes(b) || b.includes(a)));
+}
+
 export function calculateMatchScore(
   business: NormalizedBusiness,
   query: BusinessSearchQuery
 ): number {
   let score = 0;
 
-  if (
-    business.category?.toLowerCase().includes(query.businessCategory.toLowerCase()) ||
-    query.businessCategory.toLowerCase().includes(business.category?.toLowerCase() ?? "")
-  ) {
+  if (containsEither(business.category, query.businessCategory)) {
     score += scoringWeights.categoryMatch;
   }
 
-  if (
-    business.city?.toLowerCase().includes(query.location.toLowerCase()) ||
-    query.location.toLowerCase().includes(business.city?.toLowerCase() ?? "") ||
-    business.address?.toLowerCase().includes(query.location.toLowerCase())
-  ) {
+  const businessLocation = [business.address, business.city, business.state, business.country]
+    .filter(Boolean).join(" ");
+  if (containsEither(businessLocation, query.location)) {
     score += scoringWeights.locationMatch;
   }
 
@@ -53,21 +54,23 @@ export function calculateMatchScore(
   } else if (query.websiteCondition === "MISSING_OR_POOR") {
     if (!business.website || business.website.trim() === "") {
       score += scoringWeights.websiteConditionMatch;
-    } else {
-      score += Math.floor(scoringWeights.websiteConditionMatch / 2);
     }
   }
 
-  if (query.minRating !== null && business.rating !== null) {
-    if (business.rating >= query.minRating) {
+  if (query.minRating !== null || query.maxRating !== null) {
+    if (business.rating !== null &&
+      (query.minRating === null || business.rating >= query.minRating) &&
+      (query.maxRating === null || business.rating <= query.maxRating)) {
       score += scoringWeights.ratingMatch;
     }
   } else if (query.minRating === null) {
     score += scoringWeights.ratingMatch;
   }
 
-  if (query.minReviews !== null && business.reviewCount !== null) {
-    if (business.reviewCount >= query.minReviews) {
+  if (query.minReviews !== null || query.maxReviews !== null) {
+    if (business.reviewCount !== null &&
+      (query.minReviews === null || business.reviewCount >= query.minReviews) &&
+      (query.maxReviews === null || business.reviewCount <= query.maxReviews)) {
       score += scoringWeights.reviewMatch;
     }
   } else if (query.minReviews === null) {
@@ -93,6 +96,7 @@ export function generateOpportunityFlags(
   business: NormalizedBusiness,
   query: BusinessSearchQuery
 ): OpportunityFlag[] {
+  void query;
   const flags: OpportunityFlag[] = [];
 
   if (!business.website || business.website.trim() === "") {
@@ -112,13 +116,6 @@ export function generateOpportunityFlags(
     flags.push("HIGH_REVIEW_COUNT");
   } else if (business.reviewCount !== null && business.reviewCount < LOW_REVIEW_THRESHOLD) {
     flags.push("LOW_REVIEW_COUNT");
-  }
-
-  if (business.website && business.website.trim() !== "") {
-    if (query.websiteCondition === "MISSING_OR_POOR") {
-      flags.push("NO_ONLINE_BOOKING");
-      flags.push("NO_ONLINE_ORDERING");
-    }
   }
 
   return flags;

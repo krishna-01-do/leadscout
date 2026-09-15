@@ -91,17 +91,29 @@ describe("createSearchRequestSchema", () => {
   it("should validate a valid prompt", () => {
     const result = createSearchRequestSchema.safeParse({
       prompt: "Find dental clinics in Hyderabad without a website",
+      idempotencyKey: "550e8400-e29b-41d4-a716-446655440000",
     });
     expect(result.success).toBe(true);
   });
 
   it("should reject a too-short prompt", () => {
-    const result = createSearchRequestSchema.safeParse({ prompt: "ab" });
+    const result = createSearchRequestSchema.safeParse({
+      prompt: "ab",
+      idempotencyKey: "550e8400-e29b-41d4-a716-446655440000",
+    });
     expect(result.success).toBe(false);
   });
 
   it("should reject a too-long prompt", () => {
-    const result = createSearchRequestSchema.safeParse({ prompt: "x".repeat(501) });
+    const result = createSearchRequestSchema.safeParse({
+      prompt: "x".repeat(501),
+      idempotencyKey: "550e8400-e29b-41d4-a716-446655440000",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("should require a valid idempotency key", () => {
+    const result = createSearchRequestSchema.safeParse({ prompt: "Find gyms in Pune" });
     expect(result.success).toBe(false);
   });
 });

@@ -117,6 +117,19 @@ describe("calculateMatchScore", () => {
     expect(calculateMatchScore(highReviews, query)).toBeGreaterThan(calculateMatchScore(lowReviews, query));
   });
 
+  it("should enforce maximum rating and review thresholds", () => {
+    const query = makeQuery({ maxRating: 4, maxReviews: 50 });
+    const withinRange = makeBusiness({ rating: 3.9, reviewCount: 40 });
+    const outsideRange = makeBusiness({ rating: 4.8, reviewCount: 120 });
+    expect(calculateMatchScore(withinRange, query)).toBeGreaterThan(calculateMatchScore(outsideRange, query));
+  });
+
+  it("should not treat an empty provider category as a match", () => {
+    const query = makeQuery({ businessCategory: "dentist" });
+    expect(calculateMatchScore(makeBusiness({ category: "" }), query))
+      .toBeLessThan(calculateMatchScore(makeBusiness({ category: "Dentist" }), query));
+  });
+
   it("should cap score at 100", () => {
     const query = makeQuery({
       websiteCondition: "MISSING",

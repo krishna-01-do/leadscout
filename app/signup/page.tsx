@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Search, Mail, Lock, User, Loader2 } from "lucide-react";
-import { createBrowserClient } from "@/lib/supabase/client";
+import { createBrowserClient, isSupabaseBrowserConfigured } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,6 +19,7 @@ export default function SignupPage() {
   const router = useRouter();
 
   useEffect(() => {
+    if (!isSupabaseBrowserConfigured()) return;
     const supabase = createBrowserClient();
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) router.push("/app/search");
@@ -35,6 +36,12 @@ export default function SignupPage() {
     }
 
     setLoading(true);
+
+    if (!isSupabaseBrowserConfigured()) {
+      setError("Authentication is not configured. Add the Supabase variables to .env.local.");
+      setLoading(false);
+      return;
+    }
 
     const supabase = createBrowserClient();
     const { data, error } = await supabase.auth.signUp({

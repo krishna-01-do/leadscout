@@ -16,7 +16,8 @@ LeadScout interprets the prompt, searches for matching businesses, normalizes th
 User prompt
 → OpenAI parses to structured query (Zod-validated)
 → Search record created in Supabase (status: QUEUED)
-→ Provider searches for businesses (Apify or Mock)
+→ Quota is reserved atomically in PostgreSQL
+→ Provider run starts (Apify webhook, with polling recovery; or explicit local Mock)
 → Results normalized & deduplicated
 → Deterministic scoring engine qualifies each business
 → Results stored in Supabase
@@ -25,12 +26,12 @@ User prompt
 
 ### Technology Stack
 
-- **Frontend**: Next.js 13 (App Router), React, TypeScript, Tailwind CSS, shadcn/ui, Lucide icons
+- **Frontend**: Next.js 16 (App Router), React, TypeScript, Tailwind CSS, shadcn/ui, Lucide icons
 - **Backend**: Next.js Route Handlers (API routes), Zod validation
 - **Database**: Supabase PostgreSQL with Row Level Security
 - **Auth**: Supabase Auth (email/password)
-- **AI**: OpenAI API (gpt-4o-mini) for natural-language query parsing
-- **Business Discovery**: Apify API (with Mock provider fallback for development)
+- **AI**: OpenAI Responses API with strict structured output for natural-language query parsing
+- **Business Discovery**: Apify API with signed completion webhooks and recovery polling
 - **Testing**: Vitest
 - **Deployment**: Vercel
 
@@ -100,17 +101,21 @@ Copy `.env.example` to `.env.local` and fill in:
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | Supabase anon key (pre-populated) |
 | `SUPABASE_SERVICE_ROLE_KEY` | Yes | Supabase service role key (pre-populated) |
 | `OPENAI_API_KEY` | Yes | OpenAI API key for query parsing |
-| `APIFY_API_TOKEN` | No | Apify API token (falls back to Mock provider) |
-| `APIFY_ACTOR_ID` | No | Apify Actor ID for Google Maps scraper |
+| `OPENAI_MODEL` | No | Parser model; defaults to `gpt-5-mini` |
+| `APIFY_API_TOKEN` | For Apify | Apify API token; sent in an authorization header |
+| `APIFY_ACTOR_ID` | For Apify | Apify Actor ID for Google Maps scraper |
+| `APIFY_WEBHOOK_SECRET` | For Apify | Random callback secret, at least 32 characters |
+| `BUSINESS_SEARCH_PROVIDER` | Yes | `apify`, or `mock` only for local development |
 | `NEXT_PUBLIC_APP_URL` | Yes | App URL for callbacks |
 | `APP_ENV` | No | Environment flag (development/production) |
 
 **Without `OPENAI_API_KEY`**: Search will return a parse error.
-**Without `APIFY_API_TOKEN`**: The Mock provider generates realistic synthetic businesses for development.
+There is no implicit mock fallback. To use synthetic data locally, explicitly set
+`BUSINESS_SEARCH_PROVIDER=mock`; mock mode is rejected when `APP_ENV=production`.
 
 ## Supabase Setup
 
-The database migration is already applied. Tables created:
+Apply both migrations in `supabase/migrations/` in filename order. They create:
 
 - `profiles` — User profile info
 - `subscriptions` — Plan info (free trial: 1 search, 20 leads)
@@ -122,7 +127,7 @@ The database migration is already applied. Tables created:
 
 ### RLS Policies
 
-All tables have Row Level Security enabled. Users can only access their own data. The `businesses` table is shared (deduplicated across searches) but access is scoped through `search_results` via EXISTS subqueries.
+All tables have Row Level Security enabled. Authenticated clients can read only their own data. Billing, quota, provider-run, business, and result mutations are server-owned. Search quota is reserved atomically and retried requests are idempotent.
 
 ### Auth Configuration
 
@@ -132,7 +137,7 @@ A database trigger (`handle_new_user`) automatically creates a profile and free 
 
 1. Get an API key from [platform.openai.com](https://platform.openai.com)
 2. Set `OPENAI_API_KEY` in your environment
-3. The parser uses `gpt-4o-mini` with structured JSON output
+3. The parser uses the Responses API and the configured `OPENAI_MODEL`
 4. All AI output is validated with Zod schemas before use
 
 ## Apify Setup
@@ -141,7 +146,8 @@ A database trigger (`handle_new_user`) automatically creates a profile and free 
 2. Get your API token from Settings → Integrations
 3. Choose a Google Maps scraper Actor (e.g., "Google Maps Scraper" by Apify)
 4. Set `APIFY_API_TOKEN` and `APIFY_ACTOR_ID` in your environment
-5. The provider starts an Actor run, polls for completion, and fetches the dataset
+5. Set a public HTTPS `NEXT_PUBLIC_APP_URL`; the provider creates a signed ad-hoc webhook
+6. The status endpoint also performs recovery polling if a webhook is delayed
 
 ### How to Add Bright Data Later
 
@@ -154,16 +160,16 @@ The provider abstraction means you can add a new provider without changing any a
 ## Testing
 
 ```bash
-npx vitest run
+npm test
 ```
 
-57 tests covering:
+Tests cover:
 - Scoring engine (category, location, website, rating, review matching)
 - Opportunity flag generation
 - Qualification reason templates
 - Score label thresholds
 - Business deduplication
-- CSV export with escaping
+- CSV export with escaping and spreadsheet-formula neutralization
 - Zod schema validation
 - Mock provider filtering
 
@@ -182,7 +188,7 @@ npx vitest run
 - [ ] All environment variables configured in Vercel
 - [ ] Supabase Auth redirect URLs set to production domain
 - [ ] `NEXT_PUBLIC_APP_URL` matches production domain
-- [ ] Apify webhook URL configured (if using webhooks)
+- [ ] `APIFY_WEBHOOK_SECRET` is random and at least 32 characters
 - [ ] OpenAI API key has sufficient credits
 - [ ] RLS enabled on all tables (verified)
 - [ ] Service role key NOT exposed in client code
@@ -191,11 +197,11 @@ npx vitest run
 
 - Billing/Stripe integration is not implemented (upgrade buttons are placeholder)
 - Google OAuth not configured (email/password only)
-- Apify webhook callback not implemented (uses polling instead)
+- Production search requires configured OpenAI, Supabase, and Apify credentials
 - No saved lead lists or lead notes
 - No team accounts
 - Website quality assessment is limited (no website = strongest signal)
-- Mock provider returns hardcoded Hyderabad dental clinics
+- Mock provider returns synthetic Hyderabad dental clinics and is development-only
 
 ## Future Roadmap
 

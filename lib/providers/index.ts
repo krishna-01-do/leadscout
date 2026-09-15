@@ -3,7 +3,8 @@ import { ApifyBusinessSearchProvider } from "./apify-provider";
 import { MockBusinessSearchProvider } from "./mock-provider";
 
 export function getProvider(): BusinessSearchProvider {
-  const useMock = process.env.APIFY_API_TOKEN == null || process.env.APIFY_API_TOKEN === "";
+  const production = process.env.NODE_ENV === "production" || process.env.APP_ENV === "production";
+  const useMock = process.env.BUSINESS_SEARCH_PROVIDER === "mock" && !production;
   if (useMock) {
     return new MockBusinessSearchProvider();
   }
@@ -11,7 +12,8 @@ export function getProvider(): BusinessSearchProvider {
 }
 
 export function getProviderName(): string {
-  const useMock = process.env.APIFY_API_TOKEN == null || process.env.APIFY_API_TOKEN === "";
+  const production = process.env.NODE_ENV === "production" || process.env.APP_ENV === "production";
+  const useMock = process.env.BUSINESS_SEARCH_PROVIDER === "mock" && !production;
   return useMock ? "mock" : "apify";
 }
 

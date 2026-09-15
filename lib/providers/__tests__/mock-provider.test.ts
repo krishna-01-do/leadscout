@@ -71,6 +71,13 @@ describe("MockBusinessSearchProvider", () => {
     expect(results.every((b) => b.reviewCount !== null && b.reviewCount >= 100)).toBe(true);
   });
 
+  it("should filter by maximum rating and reviews", async () => {
+    const provider = new MockBusinessSearchProvider();
+    const results = await provider.searchBusinesses(makeQuery({ maxRating: 4.2, maxReviews: 80 }));
+    expect(results.every((b) => b.rating !== null && b.rating <= 4.2)).toBe(true);
+    expect(results.every((b) => b.reviewCount !== null && b.reviewCount <= 80)).toBe(true);
+  });
+
   it("should filter by phone required", async () => {
     const provider = new MockBusinessSearchProvider();
     const results = await provider.searchBusinesses(

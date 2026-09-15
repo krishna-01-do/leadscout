@@ -6,7 +6,6 @@ import { Search, History, User, LogOut, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/components/providers";
 import { branding } from "@/lib/branding";
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
