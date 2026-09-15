@@ -7,7 +7,11 @@ import {
 } from "@/lib/services/search-service";
 import { requireUser } from "@/lib/supabase/server";
 import { enforceRateLimit } from "@/lib/usage/service";
-import { businessSearchQuerySchema, createSearchRequestSchema } from "@/schemas/search";
+import {
+  businessSearchQuerySchema,
+  createSearchRequestSchema,
+  type CreateSearchRequest,
+} from "@/schemas/search";
 import type { BusinessSearchQuery } from "@/types";
 
 function numberOrFallback(value: string, fallback: number | null) {
@@ -18,7 +22,7 @@ function numberOrFallback(value: string, fallback: number | null) {
 
 function applyFilters(
   query: BusinessSearchQuery,
-  filters: NonNullable<ReturnType<typeof createSearchRequestSchema.parse>["filters"]> | null | undefined
+  filters: CreateSearchRequest["filters"]
 ) {
   if (!filters) return businessSearchQuerySchema.safeParse(query);
   return businessSearchQuerySchema.safeParse({
@@ -33,6 +37,29 @@ function applyFilters(
     phoneRequired: filters.phoneRequired,
     emailRequired: filters.emailRequired,
     resultLimit: numberOrFallback(filters.resultLimit, query.resultLimit),
+  });
+}
+
+function queryFromFilters(filters: CreateSearchRequest["filters"]) {
+  if (!filters?.businessCategory.trim() || !filters.location.trim()) {
+    return null;
+  }
+
+  return businessSearchQuerySchema.safeParse({
+    businessCategory: filters.businessCategory,
+    location: filters.location,
+    city: null,
+    state: null,
+    country: null,
+    minRating: numberOrFallback(filters.minRating, null),
+    maxRating: numberOrFallback(filters.maxRating, null),
+    minReviews: numberOrFallback(filters.minReviews, null),
+    maxReviews: numberOrFallback(filters.maxReviews, null),
+    websiteCondition: filters.websiteCondition,
+    phoneRequired: filters.phoneRequired,
+    emailRequired: filters.emailRequired,
+    keywords: [],
+    resultLimit: numberOrFallback(filters.resultLimit, 25),
   });
 }
 
@@ -54,14 +81,20 @@ export async function POST(request: NextRequest) {
     }
 
     const interpreted = await parseSearchPrompt(parsed.data.prompt);
-    if (interpreted.error || !interpreted.query) {
+    const merged = interpreted.query
+      ? applyFilters(interpreted.query, parsed.data.filters)
+      : queryFromFilters(parsed.data.filters);
+
+    if (!merged) {
       return NextResponse.json(
-        { error: interpreted.error ?? "Failed to understand the search request" },
+        {
+          error:
+            "We could not interpret that request. Include a business type and location, or complete those Advanced filters.",
+        },
         { status: 422 }
       );
     }
 
-    const merged = applyFilters(interpreted.query, parsed.data.filters);
     if (!merged.success) {
       return NextResponse.json(
         { error: merged.error.issues[0]?.message ?? "Invalid search filters" },
