@@ -17,7 +17,10 @@ export async function GET(
     const { search } = await getSearchResults(parsedId.data, user.id);
     if (!search) return NextResponse.json({ error: "Search not found" }, { status: 404 });
     return NextResponse.json({ search }, { headers: { "Cache-Control": "private, no-store" } });
-  } catch {
+  } catch (error) {
+    console.error("LeadScout search status failed", {
+      message: error instanceof Error ? error.message : "Unknown status error",
+    });
     return NextResponse.json({ error: "Failed to fetch search" }, { status: 500 });
   }
 }

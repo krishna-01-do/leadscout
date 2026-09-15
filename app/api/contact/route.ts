@@ -4,6 +4,7 @@ import { createHmac } from "crypto";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { requireUser } from "@/lib/supabase/server";
 import { contactNotificationConfigured, sendContactNotification } from "@/lib/contact/notify";
+import { isTrustedRequestOrigin } from "@/lib/security/origin";
 
 const messageSchema = z.object({
   name: z.string().trim().min(2).max(100).regex(/^[^\r\n]+$/),
@@ -18,9 +19,11 @@ export async function POST(request: NextRequest) {
   const input = messageSchema.safeParse(await request.json().catch(() => null));
   if (!input.success) return NextResponse.json({ error: input.error.issues[0]?.message ?? "Invalid message" }, { status: 400 });
   if (input.data.companyWebsite) return NextResponse.json({ ok: true }, { status: 201 });
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
-  const origin = request.headers.get("origin");
-  if (appUrl && (!origin || origin !== new URL(appUrl).origin)) return NextResponse.json({ error: "Invalid request origin" }, { status: 403 });
+  if (!isTrustedRequestOrigin({
+    origin: request.headers.get("origin"), requestUrl: request.url,
+    forwardedHost: request.headers.get("x-forwarded-host"), host: request.headers.get("host"),
+    forwardedProto: request.headers.get("x-forwarded-proto"), configuredAppUrl: process.env.NEXT_PUBLIC_APP_URL,
+  })) return NextResponse.json({ error: "Invalid request origin" }, { status: 403 });
   const rateSecret = process.env.CONTACT_RATE_LIMIT_SECRET;
   if (!rateSecret || (process.env.APP_ENV === "production" && !contactNotificationConfigured())) {
     return NextResponse.json({ error: "Contact service is not configured. Please use the support email." }, { status: 503 });

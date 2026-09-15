@@ -190,6 +190,8 @@ LeadScout uses PayU Hosted Checkout. The browser submits a server-signed checkou
 
 First use PayU test credentials and `PAYU_ENVIRONMENT=test`. Add the two INR plan amounts only after deciding your selling prices. Switch to `production` and live PayU credentials only after a successful test payment. The integration grants the plan for 30 days after each successful payment; automatic recurring mandates require PayU subscription approval and are not enabled by this one-time hosted checkout.
 
+PayU requires the customer's real mobile number in Hosted Checkout requests. LeadScout asks for it only after the customer selects a plan, inside the secure-checkout dialog; it is not displayed as a plan field.
+
 ## Vercel Deployment
 
 1. Push repository to GitHub
@@ -209,7 +211,7 @@ First use PayU test credentials and `PAYU_ENVIRONMENT=test`. Add the two INR pla
 - [ ] OpenAI API key has sufficient credits
 - [ ] RLS enabled on all tables (verified)
 - [ ] Service role key NOT exposed in client code
-- [ ] All Supabase migrations, including `202609150002_add_payments_and_contact_messages.sql`, applied
+- [ ] All Supabase migrations through `202609150004_fix_usage_upsert.sql` applied
 - [ ] PayU test payment verified before live credentials are used
 - [ ] PayU successful and failed webhooks point to `/api/webhooks/payu`
 - [ ] Resend sender domain verified and Contact Us notification received
