@@ -19,6 +19,7 @@ export function MarketingFooter() {
             <Link href="/#features" className="hover:text-foreground transition-colors">Features</Link>
             <Link href="/#pricing" className="hover:text-foreground transition-colors">Pricing</Link>
             <Link href="/#faq" className="hover:text-foreground transition-colors">FAQ</Link>
+            <Link href="/contact" className="hover:text-foreground transition-colors">Contact Us</Link>
             <Link href="/login" className="hover:text-foreground transition-colors">Log In</Link>
             <Link href="/signup" className="hover:text-foreground transition-colors">Sign Up</Link>
           </nav>

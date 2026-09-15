@@ -8,6 +8,7 @@ import { createBrowserClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { pricing } from "@/lib/branding";
+import { PayUCheckoutButton } from "@/components/payments/payu-checkout-button";
 
 export default function AccountPage() {
   const { user, signOut } = useAuth();
@@ -172,15 +173,11 @@ export default function AccountPage() {
                   <p className="text-sm font-semibold">{plan.name}</p>
                   <p className="text-lg font-bold">${plan.price}<span className="text-xs font-normal text-muted-foreground">/mo</span></p>
                   <p className="text-xs text-muted-foreground mt-1">{plan.searches} searches/mo</p>
-                  <Button size="sm" className="mt-3 w-full" disabled>
-                    Upgrade
-                  </Button>
+                  <PayUCheckoutButton plan={plan.name.toLowerCase() as "starter" | "pro"} />
                 </div>
               ))}
             </div>
-            <p className="mt-3 text-xs text-muted-foreground text-center">
-              Billing integration coming soon. Contact us to upgrade manually.
-            </p>
+            <p className="mt-3 text-xs text-muted-foreground text-center">Secure checkout powered by PayU.</p>
           </div>
         )}
       </div>
