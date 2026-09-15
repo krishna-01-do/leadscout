@@ -183,7 +183,16 @@ export async function processProviderRun(runId: string): Promise<void> {
     }
     if (run.status !== "SUCCEEDED") return;
 
-    await updateSearchStatus(searchId, "PROCESSING");
+    // The Apify webhook and browser recovery polling can arrive together. Claim
+    // processing once so they cannot race while writing the same result set.
+    const { data: claimed, error: claimError } = await database.from("searches")
+      .update({ status: "PROCESSING" })
+      .eq("id", searchId)
+      .in("status", ["QUEUED", "SEARCHING"])
+      .select("id")
+      .maybeSingle();
+    if (claimError) throw new Error("Could not claim search processing");
+    if (!claimed) return;
     const query = search.parsed_query as BusinessSearchQuery;
     const rawBusinesses = await provider.getResults(run, query);
     const businesses = deduplicateBusinesses(rawBusinesses).slice(0, search.requested_result_limit);
@@ -203,6 +212,11 @@ export async function processProviderRun(runId: string): Promise<void> {
     }).eq("id", providerRun.id);
     await updateSearchStatus(searchId, "COMPLETED", qualified.length);
   } catch (error) {
+    console.error("LeadScout search processing failed", {
+      searchId,
+      runId,
+      message: error instanceof Error ? error.message : "Unknown processing error",
+    });
     await failSearchAndRefund(searchId, "PROCESSING_FAILED", "Search results could not be processed safely.");
     await database.from("provider_runs").update({
       status: "FAILED",
@@ -297,7 +311,12 @@ export async function recoverSearch(searchId: string, userId: string) {
     .limit(1)
     .maybeSingle();
   if (run?.external_run_id) {
-    await processProviderRun(run.external_run_id);
+    try {
+      await processProviderRun(run.external_run_id);
+    } catch {
+      // processProviderRun safely marks and refunds failures. Let the status API
+      // return that terminal search record instead of masking it with HTTP 500.
+    }
     return;
   }
   const pendingSince = run?.created_at ?? search.created_at;

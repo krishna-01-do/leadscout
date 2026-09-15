@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { PaymentPlanOptions } from "@/components/payments/payment-plan-options";
 
 export default function AccountPage() {
-  const { user, signOut } = useAuth();
+  const { user, session, signOut } = useAuth();
   const router = useRouter();
   const [stats, setStats] = useState<{
     plan: string;
@@ -29,6 +29,30 @@ export default function AccountPage() {
     else if (payment === "retry") setPaymentNotice("Payment is still being verified. Refresh shortly; you will not be charged twice.");
     else if (payment === "failed" || payment === "invalid") setPaymentNotice("Payment was not completed. No plan change was made.");
   }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const txnid = params.get("txnid");
+    if (params.get("payment") !== "retry" || !txnid || !session) return;
+    let attempts = 0;
+    const check = async () => {
+      attempts += 1;
+      const response = await fetch(`/api/payments/status?txnid=${encodeURIComponent(txnid)}`, { headers: { Authorization: `Bearer ${session.access_token}` } });
+      const body = await response.json().catch(() => null);
+      if (body?.payment?.status === "success") {
+        setPaymentNotice("Payment confirmed. Your plan is now active.");
+        window.history.replaceState({}, "", "/app/account?payment=success");
+        const usageResponse = await fetch("/api/usage", { headers: { Authorization: `Bearer ${session.access_token}` } });
+        if (usageResponse.ok) setStats((await usageResponse.json()).stats);
+        return true;
+      }
+      if (body?.payment?.status === "failed") { setPaymentNotice("Payment was not completed. No plan change was made."); return true; }
+      return attempts >= 10;
+    };
+    const interval = window.setInterval(async () => { if (await check()) window.clearInterval(interval); }, 3_000);
+    void check().then((done) => { if (done) window.clearInterval(interval); });
+    return () => window.clearInterval(interval);
+  }, [session]);
 
   useEffect(() => {
     async function fetchStats() {
@@ -70,7 +94,7 @@ export default function AccountPage() {
   const leadPercent = Math.min(100, (leadsUsed / leadLimit) * 100);
 
   return (
-    <div className="space-y-6 max-w-2xl">
+    <div className="mx-auto max-w-3xl space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Account</h1>
         <p className="mt-1 text-sm text-muted-foreground">
