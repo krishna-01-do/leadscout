@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Search, History, User, LogOut, Loader2 } from "lucide-react";
+import { Search, History, User, LogOut, Loader2, MessageCircle } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/components/providers";
 import { branding } from "@/lib/branding";
@@ -23,6 +23,7 @@ export function AppNavbar() {
   const navItems = [
     { href: "/app/search", label: "Search", icon: Search },
     { href: "/app/history", label: "History", icon: History },
+    { href: "/contact", label: "Contact", icon: MessageCircle },
   ];
 
   async function handleSignOut() {

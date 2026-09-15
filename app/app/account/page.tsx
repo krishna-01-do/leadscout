@@ -7,7 +7,7 @@ import { useAuth } from "@/components/providers";
 import { createBrowserClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { pricing } from "@/lib/branding";
+import { PaymentPlanOptions } from "@/components/payments/payment-plan-options";
 
 export default function AccountPage() {
   const { user, signOut } = useAuth();
@@ -21,6 +21,14 @@ export default function AccountPage() {
   } | null>(null);
   const [loading, setLoading] = useState(true);
   const [signingOut, setSigningOut] = useState(false);
+  const [paymentNotice, setPaymentNotice] = useState<string | null>(null);
+
+  useEffect(() => {
+    const payment = new URLSearchParams(window.location.search).get("payment");
+    if (payment === "success" || payment === "complete") setPaymentNotice("Payment confirmed. Your plan is now active.");
+    else if (payment === "retry") setPaymentNotice("Payment is still being verified. Refresh shortly; you will not be charged twice.");
+    else if (payment === "failed" || payment === "invalid") setPaymentNotice("Payment was not completed. No plan change was made.");
+  }, []);
 
   useEffect(() => {
     async function fetchStats() {
@@ -69,6 +77,8 @@ export default function AccountPage() {
           Manage your account and view usage.
         </p>
       </div>
+
+      {paymentNotice && <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm">{paymentNotice}</div>}
 
       <div className="rounded-2xl border border-border/60 bg-card p-6">
         <h2 className="text-sm font-medium text-muted-foreground mb-4">Profile</h2>
@@ -157,30 +167,17 @@ export default function AccountPage() {
           </div>
         )}
 
-        {searchesUsed >= searchLimit && (
+        {stats && (
           <div className="mt-6 rounded-xl border border-primary/30 bg-primary/5 p-4">
             <div className="flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-primary" />
-              <p className="text-sm font-medium">Upgrade to continue</p>
+              <p className="text-sm font-medium">Manage your plan</p>
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
-              You've used all your searches for this period. Upgrade to get more searches and leads.
+              Upgrade or renew your current 30-day plan securely.
             </p>
-            <div className="mt-4 grid grid-cols-2 gap-3">
-              {Object.values(pricing).filter((p) => p.price > 0).map((plan) => (
-                <div key={plan.name} className="rounded-lg border border-border/60 p-3">
-                  <p className="text-sm font-semibold">{plan.name}</p>
-                  <p className="text-lg font-bold">${plan.price}<span className="text-xs font-normal text-muted-foreground">/mo</span></p>
-                  <p className="text-xs text-muted-foreground mt-1">{plan.searches} searches/mo</p>
-                  <Button size="sm" className="mt-3 w-full" disabled>
-                    Upgrade
-                  </Button>
-                </div>
-              ))}
-            </div>
-            <p className="mt-3 text-xs text-muted-foreground text-center">
-              Billing integration coming soon. Contact us to upgrade manually.
-            </p>
+            <PaymentPlanOptions currentPlan={stats.plan} />
+            <p className="mt-3 text-xs text-muted-foreground text-center">Secure checkout powered by PayU.</p>
           </div>
         )}
       </div>
