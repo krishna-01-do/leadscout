@@ -106,10 +106,23 @@ export default function SearchPage() {
       if (!session) return;
 
       const poll = async () => {
-        const res = await fetch(`/api/search/${id}`, {
-          headers: { Authorization: `Bearer ${session.access_token}` },
-        });
-        if (!res.ok) return;
+        let res: Response;
+        try {
+          res = await fetch(`/api/search/${id}`, {
+            headers: { Authorization: `Bearer ${session.access_token}` },
+          });
+        } catch {
+          return;
+        }
+        if (!res.ok) {
+          if (res.status === 401 || res.status === 404) {
+            if (pollRef.current) clearInterval(pollRef.current);
+            pollRef.current = null;
+            setError(res.status === 401 ? "Your session expired. Please sign in again." : "Search not found.");
+            setSearchLoading(false);
+          }
+          return;
+        }
 
         const data = await res.json();
         const status = data.search.status as SearchStatus;
@@ -160,6 +173,8 @@ export default function SearchPage() {
     const { data } = await supabase.auth.getSession();
     const session = data.session;
     if (!session) {
+      setSearchLoading(false);
+      setSearchStatus(null);
       router.push("/login");
       return;
     }
@@ -171,7 +186,11 @@ export default function SearchPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({
+          prompt,
+          filters,
+          idempotencyKey: crypto.randomUUID(),
+        }),
       });
 
       const data = await res.json();

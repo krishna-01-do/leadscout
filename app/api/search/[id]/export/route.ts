@@ -1,48 +1,37 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@/lib/supabase/server";
-import { getSearchResults } from "@/lib/services/search-service";
 import { generateCsv } from "@/lib/export/csv";
+import { getSearchResults } from "@/lib/services/search-service";
+import { requireUser } from "@/lib/supabase/server";
+import { z } from "zod";
+
+const selectedIdsSchema = z.array(z.string().uuid()).max(100);
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = createServerClient();
+    const user = await requireUser(request);
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const parsedId = z.string().uuid().safeParse((await params).id);
+    if (!parsedId.success) return NextResponse.json({ error: "Invalid search ID" }, { status: 400 });
 
-    const authHeader = request.headers.get("authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const selectedValue = new URL(request.url).searchParams.get("selected");
+    const selected = selectedIdsSchema.safeParse(selectedValue?.split(",").filter(Boolean) ?? []);
+    if (!selected.success) return NextResponse.json({ error: "Invalid selection" }, { status: 400 });
 
-    const token = authHeader.replace("Bearer ", "");
-    const {
-      data: { user },
-    } = await supabase.auth.getUser(token);
+    const { results, search, error } = await getSearchResults(parsedId.data, user.id);
+    if (!search) return NextResponse.json({ error: "Search not found" }, { status: 404 });
+    if (error) return NextResponse.json({ error }, { status: 500 });
+    const selectedSet = new Set(selected.data);
+    const exported = selectedSet.size ? results.filter((result) => selectedSet.has(result.id)) : results;
 
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const url = new URL(request.url);
-    const selectedIds = url.searchParams.get("selected")?.split(",").filter(Boolean);
-
-    const { results, error } = await getSearchResults(params.id, user.id);
-
-    if (error) {
-      return NextResponse.json({ error }, { status: 404 });
-    }
-
-    const toExport = selectedIds && selectedIds.length > 0
-      ? results.filter((r) => selectedIds.includes(r.id))
-      : results;
-
-    const csv = generateCsv(toExport);
-
-    return new NextResponse(csv, {
+    return new NextResponse(`\uFEFF${generateCsv(exported)}`, {
       headers: {
-        "Content-Type": "text/csv",
-        "Content-Disposition": `attachment; filename="leadscout-export.csv"`,
+        "Content-Type": "text/csv; charset=utf-8",
+        "Content-Disposition": 'attachment; filename="leadscout-export.csv"',
+        "Cache-Control": "private, no-store",
+        "X-Content-Type-Options": "nosniff",
       },
     });
   } catch {

@@ -6,7 +6,12 @@ export function deduplicateBusinesses(
   const seen = new Map<string, NormalizedBusiness>();
 
   for (const business of businesses) {
-    const primary = `${business.provider}:${business.providerBusinessId}`;
+    const fallback = [business.name, business.phone, business.address]
+      .filter(Boolean).join("|").trim().toLowerCase();
+    const primary = business.providerBusinessId.trim()
+      ? `${business.provider}:${business.providerBusinessId}`
+      : fallback;
+    if (!primary) continue;
     if (seen.has(primary)) continue;
     seen.set(primary, business);
   }

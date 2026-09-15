@@ -92,4 +92,11 @@ describe("generateCsv", () => {
     const csv = generateCsv([makeResult()]);
     expect(csv).toContain("NO_WEBSITE; HIGH_RATING");
   });
+
+  it("should neutralize spreadsheet formulas", () => {
+    const csv = generateCsv([makeResult({
+      business: { ...makeResult().business, name: "=HYPERLINK(\"https://evil.test\")" },
+    })]);
+    expect(csv).toContain("'=HYPERLINK");
+  });
 });

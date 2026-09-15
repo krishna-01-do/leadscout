@@ -4,6 +4,7 @@ import type {
   ProviderName,
 } from "@/types";
 import type { BusinessSearchProvider } from "./business-search-provider";
+import type { ProviderRun } from "./business-search-provider";
 
 const mockBusinesses: Omit<NormalizedBusiness, "id" | "provider" | "providerBusinessId">[] = [
   {
@@ -201,6 +202,18 @@ const mockBusinesses: Omit<NormalizedBusiness, "id" | "provider" | "providerBusi
 export class MockBusinessSearchProvider implements BusinessSearchProvider {
   readonly name: ProviderName = "mock";
 
+  async startSearch(): Promise<ProviderRun> {
+    return { runId: `mock-${crypto.randomUUID()}`, datasetId: "mock", status: "SUCCEEDED" };
+  }
+
+  async getRun(runId: string): Promise<ProviderRun> {
+    return { runId, datasetId: "mock", status: "SUCCEEDED" };
+  }
+
+  async getResults(_run: ProviderRun, query: BusinessSearchQuery): Promise<NormalizedBusiness[]> {
+    return this.searchBusinesses(query);
+  }
+
   async searchBusinesses(query: BusinessSearchQuery): Promise<NormalizedBusiness[]> {
     await delay(1500);
 
@@ -222,9 +235,19 @@ export class MockBusinessSearchProvider implements BusinessSearchProvider {
       results = results.filter((b) => b.rating !== null && b.rating >= minRating);
     }
 
+    if (query.maxRating !== null) {
+      const maxRating = query.maxRating;
+      results = results.filter((b) => b.rating !== null && b.rating <= maxRating);
+    }
+
     if (query.minReviews !== null) {
       const minReviews = query.minReviews;
       results = results.filter((b) => b.reviewCount !== null && b.reviewCount >= minReviews);
+    }
+
+    if (query.maxReviews !== null) {
+      const maxReviews = query.maxReviews;
+      results = results.filter((b) => b.reviewCount !== null && b.reviewCount <= maxReviews);
     }
 
     if (query.phoneRequired) {
