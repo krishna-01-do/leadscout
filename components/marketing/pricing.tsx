@@ -3,6 +3,7 @@ import { pricing } from "@/lib/branding";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import { planDetails } from "@/lib/payments/payu";
 
 export function Pricing() {
   const plans = [pricing.free, pricing.starter, pricing.pro];
@@ -21,7 +22,9 @@ export function Pricing() {
         </div>
 
         <div className="mt-14 grid gap-6 lg:grid-cols-3">
-          {plans.map((plan, i) => (
+          {plans.map((plan, i) => {
+            const paid = plan.name === "Starter" ? planDetails("starter") : plan.name === "Pro" ? planDetails("pro") : null;
+            return (
             <div
               key={plan.name}
               className={`relative rounded-2xl border bg-card p-6 ${
@@ -37,8 +40,8 @@ export function Pricing() {
               )}
               <h3 className="font-semibold text-lg">{plan.name}</h3>
               <div className="mt-2 flex items-baseline gap-1">
-                <span className="text-3xl font-bold">${plan.price}</span>
-                <span className="text-sm text-muted-foreground">/{plan.period}</span>
+                <span className="text-3xl font-bold">{plan.name === "Free" ? "₹0" : paid ? `₹${paid.amount}` : "Contact us"}</span>
+                <span className="text-sm text-muted-foreground">/{plan.name === "Free" ? plan.period : "30 days"}</span>
               </div>
 
               <div className="mt-4 space-y-1 text-sm text-muted-foreground">
@@ -64,7 +67,8 @@ export function Pricing() {
                 </Button>
               </Link>
             </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

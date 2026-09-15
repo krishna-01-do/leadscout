@@ -1,7 +1,8 @@
 import "server-only";
 
-import { createHash, randomBytes } from "crypto";
+import { randomBytes } from "crypto";
 import { pricing } from "@/lib/branding";
+import { createCheckoutHash, createResponseHash, createVerifyHash, hashesMatch } from "@/lib/payments/payu-hash";
 
 export type PaidPlan = "starter" | "pro";
 
@@ -32,28 +33,25 @@ export function newTransactionId() {
   return `LS${Date.now().toString(36)}${randomBytes(8).toString("hex")}`.slice(0, 25);
 }
 
-function sha512(value: string) { return createHash("sha512").update(value).digest("hex"); }
-
-export function checkoutHash(input: { txnid: string; amount: string; productinfo: string; firstname: string; email: string }) {
+export function checkoutHash(input: { txnid: string; amount: string; productinfo: string; firstname: string; email: string; udf1?: string; udf2?: string }) {
   const settings = config();
   if (!settings) throw new Error("PayU is not configured");
-  return sha512(`${settings.key}|${input.txnid}|${input.amount}|${input.productinfo}|${input.firstname}|${input.email}|||||||||||${settings.salt}`);
+  return createCheckoutHash({ ...input, key: settings.key, salt: settings.salt });
 }
 
 export function validResponseHash(values: Record<string, string>) {
   const settings = config();
   if (!settings || !values.hash || values.key !== settings.key) return false;
-  const expected = sha512(`${settings.salt}|${values.status}||||||${values.udf5 ?? ""}|${values.udf4 ?? ""}|${values.udf3 ?? ""}|${values.udf2 ?? ""}|${values.udf1 ?? ""}|${values.email ?? ""}|${values.firstname ?? ""}|${values.productinfo ?? ""}|${values.amount ?? ""}|${values.txnid ?? ""}|${settings.key}`);
-  return expected === values.hash;
+  return hashesMatch(createResponseHash(settings.salt, values), values.hash);
 }
 
 export async function verifyPayment(txnid: string) {
   const settings = config();
   if (!settings) throw new Error("PayU is not configured");
   const endpoint = settings.testMode ? "https://test.payu.in/merchant/postservice.php?form=2" : "https://info.payu.in/merchant/postservice.php?form=2";
-  const body = new URLSearchParams({ key: settings.key, command: "verify_payment", var1: txnid, hash: sha512(`${settings.key}|verify_payment|${txnid}|${settings.salt}`) });
+  const body = new URLSearchParams({ key: settings.key, command: "verify_payment", var1: txnid, hash: createVerifyHash(settings.key, txnid, settings.salt) });
   const response = await fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body, cache: "no-store" });
   if (!response.ok) throw new Error("PayU verification failed");
-  const payload = await response.json() as { transaction_details?: Record<string, { status?: string; mihpayid?: string; amount?: string }> };
+  const payload = await response.json() as { transaction_details?: Record<string, { status?: string; unmappedstatus?: string; mihpayid?: string; amount?: string }> };
   return payload.transaction_details?.[txnid] ?? null;
 }

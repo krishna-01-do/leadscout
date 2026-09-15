@@ -109,6 +109,10 @@ Copy `.env.example` to `.env.local` and fill in:
 | `NEXT_PUBLIC_APP_URL` | Yes | App URL for callbacks |
 | `APP_ENV` | No | Environment flag (development/production) |
 | `NEXT_PUBLIC_SUPPORT_EMAIL` | No | Direct support email shown on the Contact Us page |
+| `CONTACT_RATE_LIMIT_SECRET` | Yes | Random secret used to hash contact-form IPs for rate limiting |
+| `RESEND_API_KEY` | Production | Resend key used to notify support of new messages |
+| `CONTACT_FROM_EMAIL` | Production | Sender on a domain verified in Resend |
+| `CONTACT_TO_EMAIL` | Production | Inbox that receives Contact Us notifications |
 | `PAYU_MERCHANT_KEY` | For PayU | PayU merchant key; store as a Vercel Secret |
 | `PAYU_MERCHANT_SALT` | For PayU | PayU merchant salt; store as a Vercel Secret |
 | `PAYU_ENVIRONMENT` | For PayU | `test` while testing, then `production` |
@@ -182,7 +186,7 @@ Tests cover:
 
 ## PayU checkout
 
-LeadScout uses PayU Hosted Checkout. The browser submits a server-signed checkout form to PayU; the callback then verifies PayU's response hash and calls PayU's Verify Payment API before activating a plan. Set `surl` and `furl` indirectly by setting `NEXT_PUBLIC_APP_URL`; both are generated as `https://your-domain/api/payments/payu/callback`.
+LeadScout uses PayU Hosted Checkout. The browser submits a server-signed checkout form to PayU; the callback then verifies PayU's response hash and calls PayU's Verify Payment API before activating a plan atomically. Set `surl` and `furl` indirectly by setting `NEXT_PUBLIC_APP_URL`; both are generated as `https://your-domain/api/payments/payu/callback`. In PayU Dashboard, create successful and failed payment webhooks pointing to `https://your-domain/api/webhooks/payu`.
 
 First use PayU test credentials and `PAYU_ENVIRONMENT=test`. Add the two INR plan amounts only after deciding your selling prices. Switch to `production` and live PayU credentials only after a successful test payment. The integration grants the plan for 30 days after each successful payment; automatic recurring mandates require PayU subscription approval and are not enabled by this one-time hosted checkout.
 
@@ -207,6 +211,8 @@ First use PayU test credentials and `PAYU_ENVIRONMENT=test`. Add the two INR pla
 - [ ] Service role key NOT exposed in client code
 - [ ] All Supabase migrations, including `202609150002_add_payments_and_contact_messages.sql`, applied
 - [ ] PayU test payment verified before live credentials are used
+- [ ] PayU successful and failed webhooks point to `/api/webhooks/payu`
+- [ ] Resend sender domain verified and Contact Us notification received
 
 ## Known V1 Limitations
 

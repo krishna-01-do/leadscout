@@ -23,6 +23,7 @@ export default function ContactPage() {
     <p className="mt-3 text-muted-foreground">Have a question about LeadScout or need help choosing a plan? Send us a message and we&apos;ll get back to you.</p>
     {supportEmail && <a className="mt-5 flex items-center gap-2 text-sm text-primary hover:underline" href={`mailto:${supportEmail}`}><Mail className="h-4 w-4" /> {supportEmail}</a>}
     <form onSubmit={submit} className="mt-8 space-y-4 rounded-2xl border border-border/60 bg-card p-6">
+      <input name="companyWebsite" tabIndex={-1} autoComplete="off" aria-hidden="true" className="hidden" />
       <input name="name" required minLength={2} placeholder="Your name" className="h-11 w-full rounded-lg border bg-background px-3 text-sm" />
       <input name="email" required type="email" placeholder="you@example.com" className="h-11 w-full rounded-lg border bg-background px-3 text-sm" />
       <input name="subject" required minLength={3} placeholder="How can we help?" className="h-11 w-full rounded-lg border bg-background px-3 text-sm" />
