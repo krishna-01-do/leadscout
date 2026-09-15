@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { AuthProvider, useAuth } from "@/components/providers";
+import { useAuth } from "@/components/providers";
 import { AppNavbar } from "@/components/layout/app-navbar";
 import { Loader2 } from "lucide-react";
 
@@ -40,8 +40,6 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <AuthProvider>
-      <ProtectedLayout>{children}</ProtectedLayout>
-    </AuthProvider>
+    <ProtectedLayout>{children}</ProtectedLayout>
   );
 }

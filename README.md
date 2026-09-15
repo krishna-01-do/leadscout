@@ -186,6 +186,24 @@ Tests cover:
 
 ## PayU checkout
 
+Verification uses Hosted Checkout's `transaction_amount` / `amt` response fields.
+Account automatically reconciles the returned transaction (or the latest pending
+payment if no transaction is in the URL), so a customer with a pending payment
+should reopen Account rather than pay again. Pending provider states remain
+retryable; only confirmed failures are marked failed. Activation still requires
+a verified matching amount and the atomic `complete_payu_payment` function.
+
+If a production flow fails, run `supabase/diagnostics.sql` (read-only, not a
+migration) and inspect the Vercel function's actual console errors. HTTP request
+summaries alone do not identify a database or provider failure. This revision
+requires no new migration beyond 004. Search usage INSERT works with both the
+original partial unique index and migration 004's replacement.
+
+Profile name/email editing is available on Account. Supabase must confirm email
+changes before the sign-in email changes; allow your production `/app/account`
+URL in Supabase Auth redirect URLs. A single root AuthProvider keeps navigation
+state consistent between marketing and protected pages.
+
 LeadScout uses PayU Hosted Checkout. The browser submits a server-signed checkout form to PayU; the callback then verifies PayU's response hash and calls PayU's Verify Payment API before activating a plan atomically. Set `surl` and `furl` indirectly by setting `NEXT_PUBLIC_APP_URL`; both are generated as `https://your-domain/api/payments/payu/callback`. In PayU Dashboard, create successful and failed payment webhooks pointing to `https://your-domain/api/webhooks/payu`.
 
 First use PayU test credentials and `PAYU_ENVIRONMENT=test`. Add the two INR plan amounts only after deciding your selling prices. Switch to `production` and live PayU credentials only after a successful test payment. The integration grants the plan for 30 days after each successful payment; automatic recurring mandates require PayU subscription approval and are not enabled by this one-time hosted checkout.

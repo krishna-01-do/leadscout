@@ -23,13 +23,18 @@ export async function recordLeadUsage(
   searchId: string,
   leadCount: number
 ): Promise<void> {
-  const { error } = await createSupabaseAdmin().from("usage").upsert({
+  const { error } = await createSupabaseAdmin().from("usage").insert({
     user_id: userId,
     search_id: searchId,
     type: "leads",
     amount: leadCount,
-  }, { onConflict: "search_id,type" });
-  if (error) throw new Error("Could not record lead usage");
+  });
+  // Both the original partial index and migration 004 enforce uniqueness for
+  // non-null search IDs. INSERT works with either, unlike PostgREST upsert.
+  if (error && error.code !== "23505") {
+    console.error("Lead usage write failed", { searchId, code: error.code, message: error.message });
+    throw new Error(`Could not record lead usage (${error.code})`);
+  }
 }
 
 export async function getUsageStats(userId: string) {

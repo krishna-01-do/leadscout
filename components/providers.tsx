@@ -29,24 +29,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     const supabase = createBrowserClient();
+    let active = true;
+    let authEventReceived = false;
 
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!active || authEventReceived) return;
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
-    });
+    }).catch(() => { if (active) setLoading(false); });
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      (async () => {
+      if (active) {
+        authEventReceived = true;
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
-      })();
+      }
     });
 
-    return () => subscription.unsubscribe();
+    return () => { active = false; subscription.unsubscribe(); };
   }, []);
 
   const signOut = useCallback(async () => {

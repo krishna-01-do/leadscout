@@ -155,6 +155,7 @@ export async function processProviderRun(runId: string): Promise<void> {
   if (!search || ["COMPLETED", "FAILED"].includes(search.status)) return;
 
   const searchId = search.id as string;
+  let claimedProcessing = false;
   try {
     if (Date.now() - new Date(providerRun.created_at).getTime() > PROCESSING_TIMEOUT_MS) {
       await failSearchAndRefund(searchId, "PROVIDER_TIMEOUT", "Business discovery exceeded the 30-minute processing window.");
@@ -165,6 +166,7 @@ export async function processProviderRun(runId: string): Promise<void> {
       return;
     }
 
+    if (["PROCESSING", "SCORING"].includes(search.status)) return;
     const providerName = String(providerRun.provider).toLowerCase() as ProviderName;
     const provider = providerForName(providerName);
     const run = await provider.getRun(runId);
@@ -191,9 +193,10 @@ export async function processProviderRun(runId: string): Promise<void> {
       .in("status", ["QUEUED", "SEARCHING"])
       .select("id")
       .maybeSingle();
-    if (claimError) throw new Error("Could not claim search processing");
+    if (claimError) throw databaseFailure("claim search processing", claimError);
     if (!claimed) return;
-    const query = search.parsed_query as BusinessSearchQuery;
+    claimedProcessing = true;
+    const query = businessSearchQuerySchema.parse(search.parsed_query);
     const rawBusinesses = await provider.getResults(run, query);
     const businesses = deduplicateBusinesses(rawBusinesses).slice(0, search.requested_result_limit);
 
@@ -217,11 +220,14 @@ export async function processProviderRun(runId: string): Promise<void> {
       runId,
       message: error instanceof Error ? error.message : "Unknown processing error",
     });
+    // A transient provider-status/network error before processing starts should
+    // be retried by the webhook or next poll, not erase the user's search.
+    if (!claimedProcessing) throw error;
     await failSearchAndRefund(searchId, "PROCESSING_FAILED", "Search results could not be processed safely.");
     await database.from("provider_runs").update({
       status: "FAILED",
       completed_at: new Date().toISOString(),
-      metadata: { failure: error instanceof Error ? error.name : "unknown" },
+      metadata: { ...(providerRun.metadata ?? {}), failure: error instanceof Error ? error.message : "unknown" },
     }).eq("id", providerRun.id);
     throw error;
   }
@@ -258,7 +264,8 @@ async function persistResults(
   const { data: stored, error: businessError } = await database.from("businesses")
     .upsert(businessRows, { onConflict: "provider,provider_business_id" })
     .select("id,provider,provider_business_id");
-  if (businessError || !stored) throw new Error("Could not store businesses");
+  if (businessError) throw databaseFailure("store businesses", businessError);
+  if (!stored) throw new Error("Could not store businesses: no rows returned");
 
   const ids = new Map(stored.map((row) => [
     `${row.provider}:${row.provider_business_id}`,
@@ -279,7 +286,12 @@ async function persistResults(
   if (!resultRows.length) return;
   const { error: resultError } = await database.from("search_results")
     .upsert(resultRows, { onConflict: "search_id,business_id" });
-  if (resultError) throw new Error("Could not store search results");
+  if (resultError) throw databaseFailure("store search results", resultError);
+}
+
+function databaseFailure(operation: string, error: { code: string; message: string }) {
+  console.error("LeadScout database failure", { operation, code: error.code, message: error.message });
+  return new Error(`Could not ${operation} (${error.code})`);
 }
 
 async function updateSearchStatus(
