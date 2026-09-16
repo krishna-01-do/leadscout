@@ -1,4 +1,5 @@
 import "server-only";
+import { branding } from "@/lib/branding";
 
 export function contactNotificationConfigured() {
   return Boolean(process.env.RESEND_API_KEY && process.env.CONTACT_FROM_EMAIL && process.env.CONTACT_TO_EMAIL);
@@ -13,7 +14,7 @@ export async function sendContactNotification(message: { name: string; email: st
       from: process.env.CONTACT_FROM_EMAIL,
       to: [process.env.CONTACT_TO_EMAIL],
       reply_to: message.email,
-      subject: `[LeadScout] ${message.subject}`,
+      subject: `[${branding.name}] ${message.subject}`,
       text: `Name: ${message.name}\nEmail: ${message.email}\n\n${message.message}`,
     }),
     cache: "no-store",

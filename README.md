@@ -1,6 +1,6 @@
-# LeadScout — Find Local Business Prospects with One Prompt
+# ApplyVelocity — Find Local Business Prospects with One Prompt
 
-LeadScout is a SaaS platform that helps freelancers, agencies, and sales teams find qualified local business prospects using natural language. Describe the businesses you want to target, and LeadScout searches, normalizes, scores, and qualifies them for you.
+ApplyVelocity is a SaaS platform that helps freelancers, agencies, and sales teams find qualified local business prospects using natural language. Describe the businesses you want to target, and ApplyVelocity searches, normalizes, scores, and qualifies them for you.
 
 ## Product Overview
 
@@ -8,7 +8,7 @@ Instead of hours manually scrolling Google Maps, users type a prompt like:
 
 > "Find dental clinics in Hyderabad with at least 50 reviews and no website."
 
-LeadScout interprets the prompt, searches for matching businesses, normalizes the data, scores each prospect (0–100), generates opportunity flags, and presents results in a polished table with filtering, sorting, and CSV export.
+ApplyVelocity interprets the prompt, searches for matching businesses, normalizes the data, scores each prospect (0–100), generates opportunity flags, and presents results in a polished table with filtering, sorting, and CSV export.
 
 ## Architecture
 
@@ -204,11 +204,11 @@ changes before the sign-in email changes; allow your production `/app/account`
 URL in Supabase Auth redirect URLs. A single root AuthProvider keeps navigation
 state consistent between marketing and protected pages.
 
-LeadScout uses PayU Hosted Checkout. The browser submits a server-signed checkout form to PayU; the callback then verifies PayU's response hash and calls PayU's Verify Payment API before activating a plan atomically. Set `surl` and `furl` indirectly by setting `NEXT_PUBLIC_APP_URL`; both are generated as `https://your-domain/api/payments/payu/callback`. In PayU Dashboard, create successful and failed payment webhooks pointing to `https://your-domain/api/webhooks/payu`.
+ApplyVelocity uses PayU Hosted Checkout. The browser submits a server-signed checkout form to PayU; the callback then verifies PayU's response hash and calls PayU's Verify Payment API before activating a plan atomically. Set `surl` and `furl` indirectly by setting `NEXT_PUBLIC_APP_URL`; both are generated as `https://your-domain/api/payments/payu/callback`. In PayU Dashboard, create successful and failed payment webhooks pointing to `https://your-domain/api/webhooks/payu`.
 
 First use PayU test credentials and `PAYU_ENVIRONMENT=test`. Add the two INR plan amounts only after deciding your selling prices. Switch to `production` and live PayU credentials only after a successful test payment. The integration grants the plan for 30 days after each successful payment; automatic recurring mandates require PayU subscription approval and are not enabled by this one-time hosted checkout.
 
-PayU requires the customer's real mobile number in Hosted Checkout requests. LeadScout asks for it only after the customer selects a plan, inside the secure-checkout dialog; it is not displayed as a plan field.
+PayU requires the customer's real mobile number in Hosted Checkout requests. ApplyVelocity asks for it only after the customer selects a plan, inside the secure-checkout dialog; it is not displayed as a plan field.
 
 ## Vercel Deployment
 

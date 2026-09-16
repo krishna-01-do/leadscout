@@ -244,7 +244,7 @@ export default function SearchPage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "leadscout-export.csv";
+      a.download = "applyvelocity-export.csv";
       a.click();
       URL.revokeObjectURL(url);
     } catch {

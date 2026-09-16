@@ -243,7 +243,7 @@ export async function processProviderRun(runId: string): Promise<void> {
     }).eq("id", providerRun.id);
     await updateSearchStatus(searchId, "COMPLETED", qualified.length);
   } catch (error) {
-    console.error("LeadScout search processing failed", {
+    console.error("ApplyVelocity search processing failed", {
       searchId,
       runId,
       message: error instanceof Error ? error.message : "Unknown processing error",
@@ -318,7 +318,7 @@ async function persistResults(
 }
 
 function databaseFailure(operation: string, error: { code: string; message: string }) {
-  console.error("LeadScout database failure", { operation, code: error.code, message: error.message });
+  console.error("ApplyVelocity database failure", { operation, code: error.code, message: error.message });
   return new Error(`Could not ${operation} (${error.code})`);
 }
 

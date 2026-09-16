@@ -1,10 +1,10 @@
 export const branding = {
-  name: "LeadScout",
+  name: "ApplyVelocity",
   tagline: "Find your next customers with one prompt.",
   description:
     "Describe the businesses you want to target. We find, research and qualify the best prospects for you.",
-  domain: "leadscout.app",
-  email: "hello@leadscout.app",
+  domain: "www.applyvelocity.com",
+  email: "hello@applyvelocity.com",
 } as const;
 
 export const pricing = {

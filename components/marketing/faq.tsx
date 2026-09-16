@@ -7,7 +7,7 @@ import {
 
 const faqs = [
   {
-    q: "What does LeadScout actually do?",
+    q: "What does ApplyVelocity actually do?",
     a: "You describe the businesses you want to target in plain English — like 'Find dental clinics in Hyderabad without a website.' We interpret your prompt, search for matching businesses, score each one based on your criteria, and present the results in a clean table you can filter, sort, and export to CSV.",
   },
   {
