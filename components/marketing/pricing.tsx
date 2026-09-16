@@ -47,6 +47,7 @@ export function Pricing() {
               <div className="mt-4 space-y-1 text-sm text-muted-foreground">
                 <p>{plan.searches} searches per month</p>
                 <p>Up to {plan.leads} leads per search</p>
+                {"monthlyLeads" in plan && <p>Up to {plan.monthlyLeads.toLocaleString()} leads per month</p>}
               </div>
 
               <ul className="mt-6 space-y-3">

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { PayUCheckoutButton } from "@/components/payments/payu-checkout-button";
 
-type Plan = { name: string; amount: string; searches: number; leads: number } | null;
+type Plan = { name: string; amount: string; searches: number; leads: number; monthlyLeads: number } | null;
 
 export function PaymentPlanOptions({ currentPlan }: { currentPlan: string }) {
   const [plans, setPlans] = useState<{ starter: Plan; pro: Plan } | null>(null);
@@ -16,6 +16,8 @@ export function PaymentPlanOptions({ currentPlan }: { currentPlan: string }) {
         <p className="text-sm font-semibold capitalize">{key}</p>
         <p className="text-lg font-bold">{plan ? `₹${plan.amount}` : "Configure price"}<span className="text-xs font-normal text-muted-foreground">/30 days</span></p>
         <p className="mt-1 text-xs text-muted-foreground">{plan?.searches ?? (key === "starter" ? 50 : 200)} searches per period</p>
+        <p className="text-xs text-muted-foreground">Up to {plan?.leads ?? 50} leads per search</p>
+        <p className="text-xs text-muted-foreground">Up to {plan?.monthlyLeads ?? (key === "starter" ? 500 : 2000)} leads per period</p>
         {plan ? <PayUCheckoutButton plan={key} /> : <p className="mt-3 text-xs text-muted-foreground">PayU pricing is not configured.</p>}
       </div>;
     })}

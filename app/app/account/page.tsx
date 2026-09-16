@@ -32,6 +32,8 @@ export default function AccountPage() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+    const paymentFlow = params.has("payment") || params.has("txnid");
+    if (!paymentFlow) return;
     let txnid = params.get("txnid");
     if (!session) return;
     let attempts = 0;
@@ -47,10 +49,10 @@ export default function AccountPage() {
       if (response.status === 401) return;
       if (body?.payment?.txnid) txnid = body.payment.txnid;
       if (body?.payment?.status === "success") {
-        setPaymentNotice("Payment confirmed. Your plan is now active.");
-        window.history.replaceState({}, "", `/app/account?payment=success&txnid=${encodeURIComponent(txnid ?? "")}`);
         const usageResponse = await fetch("/api/usage", { headers: { Authorization: `Bearer ${session.access_token}` } });
         if (usageResponse.ok) setStats((await usageResponse.json()).stats);
+        setPaymentNotice(null);
+        window.history.replaceState({}, "", "/app/account");
         return;
       }
       if (body?.payment?.status === "failed") { setPaymentNotice("Payment was not completed. No plan change was made."); return; }

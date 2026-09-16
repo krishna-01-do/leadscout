@@ -59,8 +59,8 @@ export function SearchInput({ onSearch, loading, disabled }: SearchInputProps) {
 
   const handleSearch = useCallback(() => {
     if (!prompt.trim() || loading || disabled) return;
-    onSearch(prompt.trim(), showAdvanced ? filters : null);
-  }, [prompt, loading, disabled, onSearch, showAdvanced, filters]);
+    onSearch(prompt.trim(), filters);
+  }, [prompt, loading, disabled, onSearch, filters]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
@@ -81,6 +81,35 @@ export function SearchInput({ onSearch, loading, disabled }: SearchInputProps) {
           disabled={disabled}
         />
         <Search className="absolute right-4 top-4 h-5 w-5 text-muted-foreground" />
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-1.5">
+          <Label htmlFor="target-business-type">Target business type</Label>
+          <Input
+            id="target-business-type"
+            value={filters.businessCategory}
+            onChange={(e) => setFilters({ ...filters, businessCategory: e.target.value })}
+            placeholder="e.g., dental clinics"
+            disabled={disabled}
+          />
+          <p className="text-xs text-muted-foreground">
+            The type of business you want as leads—not your own business type. You can leave this blank when it is clear in the prompt.
+          </p>
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="target-location">Target location</Label>
+          <Input
+            id="target-location"
+            value={filters.location}
+            onChange={(e) => setFilters({ ...filters, location: e.target.value })}
+            placeholder="e.g., Hyderabad"
+            disabled={disabled}
+          />
+          <p className="text-xs text-muted-foreground">
+            The city, area, state, or country you want to target. You can leave this blank when it is clear in the prompt.
+          </p>
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
@@ -128,26 +157,6 @@ export function SearchInput({ onSearch, loading, disabled }: SearchInputProps) {
       {showAdvanced && (
         <div className="rounded-xl border border-border/60 bg-card p-4">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="space-y-1.5">
-              <Label className="text-xs">Business Category</Label>
-              <Input
-                value={filters.businessCategory}
-                onChange={(e) => setFilters({ ...filters, businessCategory: e.target.value })}
-                placeholder="e.g., dental clinic"
-                className="h-9"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label className="text-xs">Location</Label>
-              <Input
-                value={filters.location}
-                onChange={(e) => setFilters({ ...filters, location: e.target.value })}
-                placeholder="e.g., Hyderabad"
-                className="h-9"
-              />
-            </div>
-
             <div className="space-y-1.5">
               <Label className="text-xs">Website Status</Label>
               <Select
@@ -197,7 +206,7 @@ export function SearchInput({ onSearch, loading, disabled }: SearchInputProps) {
               <Input
                 type="number"
                 min="1"
-                max="100"
+                max="50"
                 value={filters.resultLimit}
                 onChange={(e) => setFilters({ ...filters, resultLimit: e.target.value })}
                 className="h-9"

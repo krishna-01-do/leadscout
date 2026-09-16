@@ -7,7 +7,6 @@ import { MockBusinessSearchProvider } from "@/lib/providers/mock-provider";
 import { deduplicateBusinesses } from "@/lib/scoring/dedup";
 import { qualifyBusiness } from "@/lib/scoring/engine";
 import { recordLeadUsage } from "@/lib/usage/service";
-import { freeTrialConfig } from "@/lib/branding";
 import { businessSearchQuerySchema } from "@/schemas/search";
 import type {
   BusinessSearchQuery,
@@ -51,32 +50,61 @@ export async function createSearch(
   prompt: string,
   parsedQuery: BusinessSearchQuery,
   idempotencyKey: string
-): Promise<{ searchId: string | null; error: string | null; quotaExceeded: boolean }> {
+): Promise<{
+  searchId: string | null;
+  resultLimit: number | null;
+  error: string | null;
+  quotaExceeded: boolean;
+}> {
   const database = createSupabaseAdmin();
   const provider = getProvider();
-  const resultLimit = Math.min(parsedQuery.resultLimit, freeTrialConfig.freeResultLimit);
-  const query = { ...parsedQuery, resultLimit };
 
   const { data, error } = await database.rpc("create_search_with_quota", {
     p_user_id: userId,
     p_prompt: prompt,
-    p_parsed_query: query,
+    p_parsed_query: parsedQuery,
     p_provider: provider.name,
-    p_requested_result_limit: resultLimit,
+    p_requested_result_limit: parsedQuery.resultLimit,
     p_idempotency_key: idempotencyKey,
   });
 
   if (error) {
-    const quotaExceeded = error.message.includes("search_quota_exceeded");
+    const quotaExceeded = error.message.includes("search_quota_exceeded") ||
+      error.message.includes("lead_quota_exceeded");
     return {
       searchId: null,
+      resultLimit: null,
       error: quotaExceeded
-        ? "You've used all your searches for this period. Upgrade to continue."
+        ? "You've used all your searches or leads for this period. Upgrade to continue."
         : "Failed to create search record.",
       quotaExceeded,
     };
   }
-  return { searchId: typeof data === "string" ? data : null, error: null, quotaExceeded: false };
+  const searchId = typeof data === "string" ? data : null;
+  if (!searchId) {
+    return { searchId: null, resultLimit: null, error: "Failed to create search record.", quotaExceeded: false };
+  }
+  const { data: stored, error: storedError } = await database.from("searches")
+    .select("requested_result_limit")
+    .eq("id", searchId)
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (storedError || !stored) {
+    // The quota transaction already created the search. Do not report a false
+    // failure that could make the user submit and consume another search.
+    return {
+      searchId,
+      resultLimit: Math.min(parsedQuery.resultLimit, 50),
+      error: null,
+      quotaExceeded: false,
+    };
+  }
+  return {
+    searchId,
+    resultLimit: stored.requested_result_limit as number,
+    error: null,
+    quotaExceeded: false,
+  };
 }
 
 export async function startProviderSearch(

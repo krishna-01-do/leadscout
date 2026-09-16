@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { branding } from "@/lib/branding";
+import { recordAuthActivity } from "@/lib/auth/inactivity";
 
 export default function SignupPage() {
   const [fullName, setFullName] = useState("");
@@ -59,6 +60,7 @@ export default function SignupPage() {
     }
 
     if (data.session) {
+      recordAuthActivity(data.session.user.id);
       router.push("/app/search");
     } else {
       setError("Check your email to confirm your account.");
