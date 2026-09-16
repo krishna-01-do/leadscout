@@ -67,8 +67,8 @@ BEGIN
   SELECT * INTO v_payment FROM payments WHERE txnid = p_txnid FOR UPDATE;
   IF NOT FOUND THEN RETURN false; END IF;
   IF v_payment.status = 'success' THEN RETURN true; END IF;
-  IF v_payment.plan = 'starter' THEN v_searches := 50; v_leads := 500;
-  ELSIF v_payment.plan = 'pro' THEN v_searches := 200; v_leads := 2000;
+  IF v_payment.plan = 'starter' THEN v_searches := 30; v_leads := 1500;
+  ELSIF v_payment.plan = 'pro' THEN v_searches := 60; v_leads := 3000;
   ELSE RAISE EXCEPTION 'invalid_payment_plan';
   END IF;
 
