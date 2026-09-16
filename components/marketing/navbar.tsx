@@ -1,13 +1,26 @@
 "use client";
 
 import Link from "next/link";
-import { Search, Menu, X } from "lucide-react";
+import { Search, Menu, X, User, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { branding } from "@/lib/branding";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/components/providers";
 
 export function MarketingNavbar() {
   const [open, setOpen] = useState(false);
+  const { user, loading } = useAuth();
+  const accountActions = loading ? <Loader2 aria-label="Loading account" className="h-4 w-4 animate-spin" /> : user ? (
+    <>
+      <Link href="/app/account" onClick={() => setOpen(false)}><Button variant="ghost" size="sm"><User className="mr-2 h-4 w-4" />Account</Button></Link>
+      <Link href="/app/search" onClick={() => setOpen(false)}><Button size="sm">Find Leads</Button></Link>
+    </>
+  ) : (
+    <>
+      <Link href="/login" onClick={() => setOpen(false)}><Button variant="ghost" size="sm">Log In</Button></Link>
+      <Link href="/signup" onClick={() => setOpen(false)}><Button size="sm">Find Leads Free</Button></Link>
+    </>
+  );
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/60 bg-background/80 backdrop-blur-md">
@@ -35,12 +48,7 @@ export function MarketingNavbar() {
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
-          <Link href="/login">
-            <Button variant="ghost" size="sm">Log In</Button>
-          </Link>
-          <Link href="/signup">
-            <Button size="sm">Find Leads Free</Button>
-          </Link>
+          {accountActions}
         </div>
 
         <button className="md:hidden" onClick={() => setOpen(!open)} aria-label="Toggle menu">
@@ -64,12 +72,7 @@ export function MarketingNavbar() {
               FAQ
             </Link>
             <div className="flex gap-2 pt-2">
-              <Link href="/login" className="flex-1">
-                <Button variant="outline" size="sm" className="w-full">Log In</Button>
-              </Link>
-              <Link href="/signup" className="flex-1">
-                <Button size="sm" className="w-full">Sign Up</Button>
-              </Link>
+              {accountActions}
             </div>
           </nav>
         </div>

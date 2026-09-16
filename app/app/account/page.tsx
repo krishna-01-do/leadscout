@@ -8,6 +8,7 @@ import { createBrowserClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PaymentPlanOptions } from "@/components/payments/payment-plan-options";
+import { ProfileEditor } from "@/components/account/profile-editor";
 
 export default function AccountPage() {
   const { user, session, signOut } = useAuth();
@@ -25,33 +26,45 @@ export default function AccountPage() {
 
   useEffect(() => {
     const payment = new URLSearchParams(window.location.search).get("payment");
-    if (payment === "success" || payment === "complete") setPaymentNotice("Payment confirmed. Your plan is now active.");
-    else if (payment === "retry") setPaymentNotice("Payment is still being verified. Refresh shortly; you will not be charged twice.");
+    if (["success", "complete", "retry"].includes(payment ?? "")) setPaymentNotice("Checking your payment. This page will update automatically; please do not pay again.");
     else if (payment === "failed" || payment === "invalid") setPaymentNotice("Payment was not completed. No plan change was made.");
   }, []);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const txnid = params.get("txnid");
-    if (params.get("payment") !== "retry" || !txnid || !session) return;
+    let txnid = params.get("txnid");
+    if (!session) return;
     let attempts = 0;
+    let cancelled = false;
+    let timer: number | undefined;
     const check = async () => {
       attempts += 1;
-      const response = await fetch(`/api/payments/status?txnid=${encodeURIComponent(txnid)}`, { headers: { Authorization: `Bearer ${session.access_token}` } });
+      try {
+      const response = await fetch(`/api/payments/status${txnid ? `?txnid=${encodeURIComponent(txnid)}` : ""}`, { headers: { Authorization: `Bearer ${session.access_token}` }, cache: "no-store" });
       const body = await response.json().catch(() => null);
+      if (cancelled) return;
+      if (response.ok && !body?.payment) return;
+      if (response.status === 401) return;
+      if (body?.payment?.txnid) txnid = body.payment.txnid;
       if (body?.payment?.status === "success") {
         setPaymentNotice("Payment confirmed. Your plan is now active.");
-        window.history.replaceState({}, "", "/app/account?payment=success");
+        window.history.replaceState({}, "", `/app/account?payment=success&txnid=${encodeURIComponent(txnid ?? "")}`);
         const usageResponse = await fetch("/api/usage", { headers: { Authorization: `Bearer ${session.access_token}` } });
         if (usageResponse.ok) setStats((await usageResponse.json()).stats);
-        return true;
+        return;
       }
-      if (body?.payment?.status === "failed") { setPaymentNotice("Payment was not completed. No plan change was made."); return true; }
-      return attempts >= 10;
+      if (body?.payment?.status === "failed") { setPaymentNotice("Payment was not completed. No plan change was made."); return; }
+      setPaymentNotice("Checking your payment. This page will update automatically; please do not pay again.");
+      } catch { /* Retry temporary connection failures without starting another payment. */ }
+      if (cancelled) return;
+      if (attempts >= 20) {
+        setPaymentNotice(`We could not confirm your payment yet. Do not pay again. Contact support with transaction ${txnid ?? "shown on your receipt"}. Reopening Account will check again.`);
+        return;
+      }
+      timer = window.setTimeout(check, 5_000);
     };
-    const interval = window.setInterval(async () => { if (await check()) window.clearInterval(interval); }, 3_000);
-    void check().then((done) => { if (done) window.clearInterval(interval); });
-    return () => window.clearInterval(interval);
+    void check();
+    return () => { cancelled = true; window.clearTimeout(timer); };
   }, [session]);
 
   useEffect(() => {
@@ -140,6 +153,7 @@ export default function AccountPage() {
             </div>
           </div>
         </div>
+        <ProfileEditor />
       </div>
 
       <div className="rounded-2xl border border-border/60 bg-card p-6">
