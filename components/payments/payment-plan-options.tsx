@@ -1,9 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Check } from "lucide-react";
 import { PayUCheckoutButton } from "@/components/payments/payu-checkout-button";
 
-type Plan = { name: string; amount: string; searches: number; leads: number; monthlyLeads: number } | null;
+type Plan = {
+  name: string;
+  amount: string;
+  searches: number;
+  leads: number;
+  monthlyLeads: number;
+  features: string[];
+} | null;
 
 export function PaymentPlanOptions({ currentPlan }: { currentPlan: string }) {
   const [plans, setPlans] = useState<{ starter: Plan; pro: Plan } | null>(null);
@@ -18,6 +26,12 @@ export function PaymentPlanOptions({ currentPlan }: { currentPlan: string }) {
         <p className="mt-1 text-xs text-muted-foreground">{plan?.searches ?? (key === "starter" ? 30 : 60)} searches per period</p>
         <p className="text-xs text-muted-foreground">Up to {plan?.leads ?? 50} leads per search</p>
         <p className="text-xs text-muted-foreground">Up to {plan?.monthlyLeads ?? (key === "starter" ? 1500 : 3000)} leads per period</p>
+        {plan && <ul className="mt-3 space-y-2 border-t border-border/60 pt-3">
+          {plan.features.map((feature) => <li key={feature} className="flex items-start gap-2 text-xs text-muted-foreground">
+            <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
+            <span>{feature}</span>
+          </li>)}
+        </ul>}
         {plan ? <PayUCheckoutButton plan={key} /> : <p className="mt-3 text-xs text-muted-foreground">PayU pricing is not configured.</p>}
       </div>;
     })}
