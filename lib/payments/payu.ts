@@ -29,6 +29,7 @@ export function planDetails(plan: PaidPlan) {
     searches: item.searches,
     leads: item.leads,
     monthlyLeads: item.monthlyLeads,
+    features: item.features,
   };
 }
 
