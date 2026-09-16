@@ -20,7 +20,7 @@ export default function ContactPage() {
   return <main className="mx-auto max-w-xl px-4 py-16 sm:px-6">
     <Link href="/" className="text-sm text-muted-foreground hover:text-foreground">← Back to {branding.name}</Link>
     <h1 className="mt-8 text-3xl font-bold tracking-tight">Contact us</h1>
-    <p className="mt-3 text-muted-foreground">Have a question about LeadScout or need help choosing a plan? Send us a message and we&apos;ll get back to you.</p>
+    <p className="mt-3 text-muted-foreground">Have a question about ApplyVelocity or need help choosing a plan? Send us a message and we&apos;ll get back to you.</p>
     {supportEmail && <a className="mt-5 flex items-center gap-2 text-sm text-primary hover:underline" href={`mailto:${supportEmail}`}><Mail className="h-4 w-4" /> {supportEmail}</a>}
     <form onSubmit={submit} className="mt-8 space-y-4 rounded-2xl border border-border/60 bg-card p-6">
       <input name="companyWebsite" tabIndex={-1} autoComplete="off" aria-hidden="true" className="hidden" />

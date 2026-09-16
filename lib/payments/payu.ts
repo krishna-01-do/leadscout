@@ -37,7 +37,7 @@ export function paymentEndpoint() {
 }
 
 export function newTransactionId() {
-  return `LS${Date.now().toString(36)}${randomBytes(8).toString("hex")}`.slice(0, 25);
+  return `AV${Date.now().toString(36)}${randomBytes(8).toString("hex")}`.slice(0, 25);
 }
 
 export function checkoutHash(input: { txnid: string; amount: string; productinfo: string; firstname: string; email: string; udf1?: string; udf2?: string }) {

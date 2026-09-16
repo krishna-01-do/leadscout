@@ -29,7 +29,7 @@ export async function GET(
     return new NextResponse(`\uFEFF${generateCsv(exported)}`, {
       headers: {
         "Content-Type": "text/csv; charset=utf-8",
-        "Content-Disposition": 'attachment; filename="leadscout-export.csv"',
+        "Content-Disposition": 'attachment; filename="applyvelocity-export.csv"',
         "Cache-Control": "private, no-store",
         "X-Content-Type-Options": "nosniff",
       },
