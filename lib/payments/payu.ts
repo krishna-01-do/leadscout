@@ -23,7 +23,13 @@ export function planDetails(plan: PaidPlan) {
   const configuredAmount = process.env[`PAYU_${plan.toUpperCase()}_AMOUNT_INR`];
   const amount = configuredAmount ? Number(configuredAmount) : Number.NaN;
   if (!Number.isFinite(amount) || amount <= 0) return null;
-  return { name: item.name, amount: amount.toFixed(2), searches: item.searches, leads: item.leads };
+  return {
+    name: item.name,
+    amount: amount.toFixed(2),
+    searches: item.searches,
+    leads: item.leads,
+    monthlyLeads: item.monthlyLeads,
+  };
 }
 
 export function paymentEndpoint() {

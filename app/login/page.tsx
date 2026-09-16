@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { branding } from "@/lib/branding";
+import { isAuthInactive, readLastActivity, recordAuthActivity } from "@/lib/auth/inactivity";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -21,7 +22,13 @@ export default function LoginPage() {
     if (!isSupabaseBrowserConfigured()) return;
     const supabase = createBrowserClient();
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) router.push("/app/search");
+      if (!session) return;
+      const lastActivity = readLastActivity(session.user.id);
+      if (lastActivity && isAuthInactive(lastActivity)) {
+        void supabase.auth.signOut();
+        return;
+      }
+      router.push("/app/search");
     });
   }, [router]);
 
@@ -37,7 +44,7 @@ export default function LoginPage() {
     }
 
     const supabase = createBrowserClient();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
       setError(error.message === "Invalid login credentials"
@@ -48,6 +55,7 @@ export default function LoginPage() {
       return;
     }
 
+    if (data.user) recordAuthActivity(data.user.id);
     router.push("/app/search");
   }
 

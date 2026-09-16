@@ -133,7 +133,10 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { searchId: created.searchId, parsedQuery: merged.data },
+      {
+        searchId: created.searchId,
+        parsedQuery: { ...merged.data, resultLimit: created.resultLimit ?? merged.data.resultLimit },
+      },
       { status: 202 }
     );
   } catch {

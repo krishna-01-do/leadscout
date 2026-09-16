@@ -116,8 +116,8 @@ Copy `.env.example` to `.env.local` and fill in:
 | `PAYU_MERCHANT_KEY` | For PayU | PayU merchant key; store as a Vercel Secret |
 | `PAYU_MERCHANT_SALT` | For PayU | PayU merchant salt; store as a Vercel Secret |
 | `PAYU_ENVIRONMENT` | For PayU | `test` while testing, then `production` |
-| `PAYU_STARTER_AMOUNT_INR` | For PayU | Starter monthly price in INR, e.g. `2900` |
-| `PAYU_PRO_AMOUNT_INR` | For PayU | Pro monthly price in INR, e.g. `6900` |
+| `PAYU_STARTER_AMOUNT_INR` | For PayU | Starter selling price in INR, configured in Vercel |
+| `PAYU_PRO_AMOUNT_INR` | For PayU | Pro selling price in INR, configured in Vercel |
 
 **Without `OPENAI_API_KEY`**: a complete Business Category and Location in Advanced Filters can still start a search.
 There is no implicit mock fallback. To use synthetic data locally, explicitly set

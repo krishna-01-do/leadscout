@@ -24,13 +24,14 @@ export const pricing = {
   },
   starter: {
     name: "Starter",
-    price: 29,
     period: "month",
     searches: 50,
-    leads: 500,
+    leads: 50,
+    monthlyLeads: 500,
     features: [
       "50 searches per month",
-      "Up to 500 leads per search",
+      "Up to 50 leads per search",
+      "Up to 500 leads per month",
       "Opportunity scoring",
       "CSV export",
       "Search history",
@@ -39,13 +40,14 @@ export const pricing = {
   },
   pro: {
     name: "Pro",
-    price: 79,
     period: "month",
     searches: 200,
-    leads: 2000,
+    leads: 50,
+    monthlyLeads: 2000,
     features: [
       "200 searches per month",
-      "Up to 2,000 leads per search",
+      "Up to 50 leads per search",
+      "Up to 2,000 leads per month",
       "Opportunity scoring",
       "CSV export",
       "Search history",
@@ -55,7 +57,3 @@ export const pricing = {
   },
 } as const;
 
-export const freeTrialConfig = {
-  freeSearchLimit: 1,
-  freeResultLimit: 20,
-} as const;

@@ -21,7 +21,7 @@ export const businessSearchQuerySchema = z.object({
   phoneRequired: z.boolean().default(false),
   emailRequired: z.boolean().default(false),
   keywords: z.array(z.string().trim().min(1).max(60)).max(10).default([]),
-  resultLimit: z.number().int().min(1).max(100).default(25),
+  resultLimit: z.number().int().min(1).max(50).default(25),
 }).superRefine((query, context) => {
   if (query.minRating !== null && query.maxRating !== null && query.minRating > query.maxRating) {
     context.addIssue({ code: "custom", message: "Minimum rating cannot exceed maximum rating" });

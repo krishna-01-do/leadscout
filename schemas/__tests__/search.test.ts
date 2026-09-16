@@ -76,11 +76,11 @@ describe("businessSearchQuerySchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("should reject result limit above 100", () => {
+  it("should reject result limit above the paid-plan cap", () => {
     const input = {
       businessCategory: "gym",
       location: "Pune",
-      resultLimit: 200,
+      resultLimit: 51,
     };
     const result = businessSearchQuerySchema.safeParse(input);
     expect(result.success).toBe(false);
