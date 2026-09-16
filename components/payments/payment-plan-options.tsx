@@ -22,10 +22,10 @@ export function PaymentPlanOptions({ currentPlan }: { currentPlan: string }) {
       const plan = plans?.[key];
       return <div key={key} className="rounded-lg border border-border/60 p-3">
         <p className="text-sm font-semibold capitalize">{key}</p>
-        <p className="text-lg font-bold">{plan ? `₹${plan.amount}` : "Configure price"}<span className="text-xs font-normal text-muted-foreground">/30 days</span></p>
-        <p className="mt-1 text-xs text-muted-foreground">{plan?.searches ?? (key === "starter" ? 30 : 60)} searches per period</p>
+        <p className="text-lg font-bold">{plan ? `₹${plan.amount}` : "Configure price"}<span className="text-xs font-normal text-muted-foreground">/month</span></p>
+        {/* <p className="mt-1 text-xs text-muted-foreground">{plan?.searches ?? (key === "starter" ? 30 : 60)} searches per period</p>
         <p className="text-xs text-muted-foreground">Up to {plan?.leads ?? 50} leads per search</p>
-        <p className="text-xs text-muted-foreground">Up to {plan?.monthlyLeads ?? (key === "starter" ? 1500 : 3000)} leads per period</p>
+        <p className="text-xs text-muted-foreground">Up to {plan?.monthlyLeads ?? (key === "starter" ? 1500 : 3000)} leads per period</p> */}
         {plan && <ul className="mt-3 space-y-2 border-t border-border/60 pt-3">
           {plan.features.map((feature) => <li key={feature} className="flex items-start gap-2 text-xs text-muted-foreground">
             <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
