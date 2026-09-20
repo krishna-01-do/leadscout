@@ -36,30 +36,31 @@ export function AppNavbar() {
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/80 backdrop-blur-md">
-      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
-        <div className="flex items-center gap-6">
+      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-2 px-3 sm:px-6">
+        <div className="flex min-w-0 items-center gap-2 sm:gap-6">
           <Link href="/app/search" className="flex items-center gap-2 font-semibold">
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-primary-foreground">
               <Search className="h-3.5 w-3.5" />
             </div>
-            {branding.name}
+            <span className="hidden sm:inline">{branding.name}</span>
           </Link>
 
-          <nav className="flex items-center gap-1">
+          <nav className="flex items-center gap-0.5 sm:gap-1">
             {navItems.map((item) => {
               const active = pathname === item.href;
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm transition-colors ${
+                  aria-label={item.label}
+                  className={`flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm transition-colors sm:px-3 sm:py-1.5 ${
                     active
                       ? "bg-primary/10 text-primary font-medium"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted"
                   }`}
                 >
                   <item.icon className="h-3.5 w-3.5" />
-                  {item.label}
+                  <span className="hidden md:inline">{item.label}</span>
                 </Link>
               );
             })}

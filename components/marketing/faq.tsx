@@ -24,7 +24,7 @@ const faqs = [
   },
   {
     q: "Is there a free trial?",
-    a: "Yes. Every new account gets one free search that returns up to 20 leads. No credit card required. You can see the full results, export them, and decide if the tool is worth upgrading.",
+    a: "Yes. Every new account gets one free search that returns up to 10 leads. No credit card required. You can see the full results, export them, and decide if the tool is worth upgrading.",
   },
   {
     q: "Will my old searches rerun and cost me credits?",

@@ -47,7 +47,7 @@ export async function getUsageStats(userId: string) {
 
   if (subscriptionError) throw new Error("Could not load subscription");
   if (!subscription) {
-    return { plan: "free", searchesUsed: 0, searchLimit: 1, leadsUsed: 0, leadLimit: 20 };
+    return { plan: "free", searchesUsed: 0, searchLimit: 1, leadsUsed: 0, leadLimit: 10 };
   }
 
   const [{ count: searchesUsed, error: searchError }, { data: leadUsage, error: leadError }] =
@@ -66,6 +66,6 @@ export async function getUsageStats(userId: string) {
     searchesUsed: searchesUsed ?? 0,
     searchLimit: subscription.monthly_search_limit,
     leadsUsed: leadUsage?.reduce((sum, item) => sum + item.amount, 0) ?? 0,
-    leadLimit: subscription.monthly_lead_limit,
+    leadLimit: subscription.plan === "free" ? 10 : subscription.monthly_lead_limit,
   };
 }

@@ -37,8 +37,8 @@ export const createSearchRequestSchema = z.object({
   prompt: z.string().trim().min(8, "Please describe the businesses you want to find").max(500),
   idempotencyKey: z.string().uuid(),
   filters: z.object({
-    businessCategory: z.string().trim().max(100),
-    location: z.string().trim().max(160),
+    businessCategory: z.string().trim().min(2, "Target business type is required").max(100),
+    location: z.string().trim().min(2, "Target location is required").max(160),
     minRating: z.string().max(16),
     maxRating: z.string().max(16),
     minReviews: z.string().max(16),
@@ -47,7 +47,7 @@ export const createSearchRequestSchema = z.object({
     phoneRequired: z.boolean(),
     emailRequired: z.boolean(),
     resultLimit: z.string().max(4),
-  }).nullable().optional(),
+  }),
 });
 
 export type CreateSearchRequest = z.infer<typeof createSearchRequestSchema>;

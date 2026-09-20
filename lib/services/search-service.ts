@@ -58,13 +58,22 @@ export async function createSearch(
 }> {
   const database = createSupabaseAdmin();
   const provider = getProvider();
+  const { data: subscription } = await database
+    .from("subscriptions")
+    .select("plan")
+    .eq("user_id", userId)
+    .maybeSingle();
+  const requestedResultLimit = Math.min(
+    parsedQuery.resultLimit,
+    subscription?.plan === "free" ? 10 : 50
+  );
 
   const { data, error } = await database.rpc("create_search_with_quota", {
     p_user_id: userId,
     p_prompt: prompt,
     p_parsed_query: parsedQuery,
     p_provider: provider.name,
-    p_requested_result_limit: parsedQuery.resultLimit,
+    p_requested_result_limit: requestedResultLimit,
     p_idempotency_key: idempotencyKey,
   });
 
@@ -94,7 +103,7 @@ export async function createSearch(
     // failure that could make the user submit and consume another search.
     return {
       searchId,
-      resultLimit: Math.min(parsedQuery.resultLimit, 50),
+      resultLimit: requestedResultLimit,
       error: null,
       quotaExceeded: false,
     };

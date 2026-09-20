@@ -41,10 +41,6 @@ function applyFilters(
 }
 
 function queryFromFilters(filters: CreateSearchRequest["filters"]) {
-  if (!filters?.businessCategory.trim() || !filters.location.trim()) {
-    return null;
-  }
-
   return businessSearchQuerySchema.safeParse({
     businessCategory: filters.businessCategory,
     location: filters.location,
@@ -89,7 +85,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error:
-            "We could not interpret that request. Include a business type and location, or complete those Advanced filters.",
+            "We could not interpret that request. Check the required target business type and target location.",
         },
         { status: 422 }
       );

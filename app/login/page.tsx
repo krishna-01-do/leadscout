@@ -68,7 +68,7 @@ export default function LoginPage() {
         {branding.name}
       </Link>
 
-      <div className="w-full max-w-sm rounded-2xl border border-border/60 bg-card p-8 shadow-lg">
+      <div className="w-full max-w-sm rounded-2xl border border-border/60 bg-card p-5 shadow-lg sm:p-8">
         <h1 className="text-xl font-semibold">Welcome back</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Sign in to your account to continue.
@@ -92,7 +92,12 @@ export default function LoginPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <div className="flex items-center justify-between gap-3">
+              <Label htmlFor="password">Password</Label>
+              <Link href="/forgot-password" className="text-xs font-medium text-primary hover:underline">
+                Forgot password?
+              </Link>
+            </div>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input

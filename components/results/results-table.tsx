@@ -157,8 +157,8 @@ export function ResultsTable({ results, onExport, exporting, selectedIds, onSele
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-1 items-center gap-2">
-          <div className="relative flex-1 max-w-xs">
+        <div className="flex min-w-0 flex-1 items-center gap-2">
+          <div className="relative min-w-0 flex-1 sm:max-w-xs">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search within results..."
@@ -178,9 +178,9 @@ export function ResultsTable({ results, onExport, exporting, selectedIds, onSele
           </Button>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center sm:justify-end">
           {selected.size > 0 && (
-            <span className="text-xs text-muted-foreground">
+            <span className="col-span-2 text-xs text-muted-foreground sm:col-span-1">
               {selected.size} selected
             </span>
           )}
@@ -189,7 +189,7 @@ export function ResultsTable({ results, onExport, exporting, selectedIds, onSele
             size="sm"
             onClick={() => onExport(true)}
             disabled={selected.size === 0 || exporting}
-            className="h-9"
+            className="h-auto min-h-9 whitespace-normal px-2 sm:h-9 sm:px-3"
           >
             <Download className="h-3.5 w-3.5" />
             Export Selected
@@ -199,7 +199,7 @@ export function ResultsTable({ results, onExport, exporting, selectedIds, onSele
             size="sm"
             onClick={() => onExport(false)}
             disabled={exporting}
-            className="h-9"
+            className="h-auto min-h-9 whitespace-normal px-2 sm:h-9 sm:px-3"
           >
             <Download className="h-3.5 w-3.5" />
             Export All
@@ -208,8 +208,8 @@ export function ResultsTable({ results, onExport, exporting, selectedIds, onSele
       </div>
 
       {showFilters && (
-        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border/60 bg-card p-3">
-          <div className="flex items-center gap-2">
+        <div className="grid gap-3 rounded-lg border border-border/60 bg-card p-3 sm:flex sm:flex-wrap sm:items-center">
+          <div className="flex min-w-0 items-center justify-between gap-2 sm:justify-start">
             <span className="text-xs text-muted-foreground">Website:</span>
             <Select value={filterWebsite} onValueChange={setFilterWebsite}>
               <SelectTrigger className="h-8 w-28">
@@ -223,7 +223,7 @@ export function ResultsTable({ results, onExport, exporting, selectedIds, onSele
             </Select>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 items-center justify-between gap-2 sm:justify-start">
             <span className="text-xs text-muted-foreground">Min Score:</span>
             <Select value={filterMinScore} onValueChange={setFilterMinScore}>
               <SelectTrigger className="h-8 w-24">
@@ -238,7 +238,7 @@ export function ResultsTable({ results, onExport, exporting, selectedIds, onSele
             </Select>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 items-center justify-between gap-2 sm:justify-start">
             <span className="text-xs text-muted-foreground">Flag:</span>
             <Select value={filterFlag} onValueChange={setFilterFlag}>
               <SelectTrigger className="h-8 w-36">
@@ -273,7 +273,7 @@ export function ResultsTable({ results, onExport, exporting, selectedIds, onSele
         {filtered.length} {filtered.length === 1 ? "result" : "results"}
       </div>
 
-      <div className="rounded-xl border border-border/60 overflow-hidden">
+      <div className="hidden overflow-hidden rounded-xl border border-border/60 md:block">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-muted/50">
@@ -415,8 +415,62 @@ export function ResultsTable({ results, onExport, exporting, selectedIds, onSele
         )}
       </div>
 
+      <div className="space-y-3 md:hidden">
+        {filtered.map((row) => {
+          const scoreLabel = getScoreLabel(row.matchScore);
+          return (
+            <article
+              key={row.id}
+              className="rounded-xl border border-border/60 bg-card p-4"
+              onClick={() => setDetailRow(row)}
+            >
+              <div className="flex items-start gap-3">
+                <div onClick={(event) => event.stopPropagation()}>
+                  <Checkbox
+                    checked={selected.has(row.id)}
+                    onCheckedChange={() => toggleSelect(row.id)}
+                    aria-label={`Select ${row.business.name}`}
+                  />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-start justify-between gap-3">
+                    <h3 className="font-medium leading-snug">{row.business.name}</h3>
+                    <span className={`shrink-0 text-sm font-semibold ${scoreLabel.color}`}>{row.matchScore}%</span>
+                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground">{row.business.category ?? "Uncategorized"}</p>
+                  <p className="mt-2 flex items-start gap-1.5 text-xs text-muted-foreground">
+                    <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                    <span>{row.business.city ?? row.business.address ?? "Location unavailable"}</span>
+                  </p>
+                  <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+                    {row.business.rating !== null && (
+                      <span className="flex items-center gap-1"><Star className="h-3 w-3 fill-amber-400 text-amber-400" />{row.business.rating.toFixed(1)}</span>
+                    )}
+                    {row.business.phone && <span className="flex items-center gap-1 text-muted-foreground"><Phone className="h-3 w-3" />Phone</span>}
+                    {row.business.website ? (
+                      <a href={row.business.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-primary" onClick={(event) => event.stopPropagation()}>
+                        <Globe className="h-3 w-3" />Website
+                      </a>
+                    ) : <Badge variant="outline" className="text-xs text-destructive">No Website</Badge>}
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-1">
+                    {row.opportunityFlags.slice(0, 2).map((flag) => <Badge key={flag} variant="secondary" className="text-xs">{flagLabels[flag]}</Badge>)}
+                  </div>
+                </div>
+              </div>
+            </article>
+          );
+        })}
+        {filtered.length === 0 && (
+          <div className="rounded-xl border border-border/60 bg-card py-12 text-center text-muted-foreground">
+            <p className="text-sm">No results match your filters.</p>
+            <p className="mt-1 text-xs">Try clearing filters or adjusting your search.</p>
+          </div>
+        )}
+      </div>
+
       <Sheet open={!!detailRow} onOpenChange={(open) => !open && setDetailRow(null)}>
-        <SheetContent className="overflow-y-auto sm:max-w-md">
+        <SheetContent className="w-[92vw] overflow-y-auto sm:max-w-md">
           {detailRow && (
             <>
               <SheetHeader>

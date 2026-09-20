@@ -93,7 +93,7 @@ export default function HistoryPage() {
       )}
 
       {history.length === 0 && !error ? (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-border/60 bg-card py-16 text-center">
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-border/60 bg-card px-4 py-12 text-center sm:py-16">
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
             <History className="h-6 w-6" />
           </div>
@@ -107,7 +107,28 @@ export default function HistoryPage() {
           </Button>
         </div>
       ) : (
-        <div className="rounded-xl border border-border/60 overflow-hidden">
+        <div className="contents">
+        <div className="space-y-3 md:hidden">
+          {history.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              className="w-full rounded-xl border border-border/60 bg-card p-4 text-left transition-colors hover:bg-muted/30"
+              onClick={() => router.push(`/app/search?search=${item.id}`)}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <p className="min-w-0 flex-1 font-medium leading-snug">{item.prompt}</p>
+                <ChevronRight className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+              </div>
+              <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{formatDate(item.createdAt)}</span>
+                <span>{item.resultCount} results</span>
+                {statusBadge(item.status)}
+              </div>
+            </button>
+          ))}
+        </div>
+        <div className="hidden overflow-hidden rounded-xl border border-border/60 md:block">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-muted/50">
@@ -143,6 +164,7 @@ export default function HistoryPage() {
               </tbody>
             </table>
           </div>
+        </div>
         </div>
       )}
     </div>
