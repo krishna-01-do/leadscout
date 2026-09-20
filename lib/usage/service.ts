@@ -66,6 +66,6 @@ export async function getUsageStats(userId: string) {
     searchesUsed: searchesUsed ?? 0,
     searchLimit: subscription.monthly_search_limit,
     leadsUsed: leadUsage?.reduce((sum, item) => sum + item.amount, 0) ?? 0,
-    leadLimit: subscription.monthly_lead_limit,
+    leadLimit: subscription.plan === "free" ? 10 : subscription.monthly_lead_limit,
   };
 }
