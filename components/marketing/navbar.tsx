@@ -25,11 +25,11 @@ export function MarketingNavbar() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/60 bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-        <Link href="/" className="flex items-center gap-2 font-semibold text-lg">
+        <Link href="/" className="flex min-w-0 items-center gap-2 text-base font-semibold sm:text-lg">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <Search className="h-4 w-4" />
           </div>
-          {branding.name}
+          <span className="truncate">{branding.name}</span>
         </Link>
 
         <nav className="hidden items-center gap-6 md:flex">
@@ -71,7 +71,7 @@ export function MarketingNavbar() {
             <Link href="/#faq" onClick={() => setOpen(false)} className="text-sm text-muted-foreground hover:text-foreground">
               FAQ
             </Link>
-            <div className="flex gap-2 pt-2">
+            <div className="flex flex-wrap gap-2 pt-2">
               {accountActions}
             </div>
           </nav>

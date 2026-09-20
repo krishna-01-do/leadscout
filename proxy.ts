@@ -25,10 +25,10 @@ export async function proxy(request: NextRequest) {
   if (!user && request.nextUrl.pathname.startsWith("/app")) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
-  if (user && ["/login", "/signup"].includes(request.nextUrl.pathname)) {
+  if (user && ["/login", "/signup", "/forgot-password"].includes(request.nextUrl.pathname)) {
     return NextResponse.redirect(new URL("/app/search", request.url));
   }
   return response;
 }
 
-export const config = { matcher: ["/app/:path*", "/login", "/signup"] };
+export const config = { matcher: ["/app/:path*", "/login", "/signup", "/forgot-password"] };

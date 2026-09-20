@@ -13,10 +13,8 @@ export const pricing = {
     price: 0,
     period: "forever",
     searches: 1,
-    leads: 20,
+    leads: 10,
     features: [
-      "1 free prospect search",
-      "Up to 20 leads per search",
       "Opportunity scoring",
       "CSV export",
       "Search history",
@@ -29,9 +27,6 @@ export const pricing = {
     leads: 50,
     monthlyLeads: 1500,
     features: [
-      "30 searches per month",
-      "Up to 50 leads per search",
-      "Up to 1,500 leads per month",
       "Opportunity scoring",
       "CSV export",
       "Search history",
@@ -45,9 +40,6 @@ export const pricing = {
     leads: 50,
     monthlyLeads: 3000,
     features: [
-      "60 searches per month",
-      "Up to 50 leads per search",
-      "Up to 3,000 leads per month",
       "Opportunity scoring",
       "CSV export",
       "Search history",

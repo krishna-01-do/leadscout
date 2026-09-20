@@ -272,7 +272,7 @@ export default function SearchPage() {
       </div>
 
       {usage && (
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
           <Badge variant={usage.searchesUsed >= usage.searchLimit ? "destructive" : "secondary"}>
             {usage.searchesUsed} / {usage.searchLimit} searches used
           </Badge>
@@ -280,7 +280,7 @@ export default function SearchPage() {
         </div>
       )}
 
-      <div className="rounded-2xl border border-border/60 bg-card p-6">
+      <div className="rounded-2xl border border-border/60 bg-card p-4 sm:p-6">
         <SearchInput onSearch={handleSearch} loading={searchLoading} disabled={quotaExceeded} />
       </div>
 
@@ -297,7 +297,7 @@ export default function SearchPage() {
       )}
 
       {quotaExceeded && (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-border/60 bg-card py-16 text-center">
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-border/60 bg-card px-4 py-12 text-center sm:py-16">
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
             <Lock className="h-6 w-6" />
           </div>

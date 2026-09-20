@@ -92,6 +92,18 @@ describe("createSearchRequestSchema", () => {
     const result = createSearchRequestSchema.safeParse({
       prompt: "Find dental clinics in Hyderabad without a website",
       idempotencyKey: "550e8400-e29b-41d4-a716-446655440000",
+      filters: {
+        businessCategory: "dental clinics",
+        location: "Hyderabad",
+        minRating: "",
+        maxRating: "",
+        minReviews: "",
+        maxReviews: "",
+        websiteCondition: "ANY",
+        phoneRequired: false,
+        emailRequired: false,
+        resultLimit: "10",
+      },
     });
     expect(result.success).toBe(true);
   });
@@ -114,6 +126,26 @@ describe("createSearchRequestSchema", () => {
 
   it("should require a valid idempotency key", () => {
     const result = createSearchRequestSchema.safeParse({ prompt: "Find gyms in Pune" });
+    expect(result.success).toBe(false);
+  });
+
+  it("should require explicit target fields", () => {
+    const result = createSearchRequestSchema.safeParse({
+      prompt: "Find dental clinics in Hyderabad without a website",
+      idempotencyKey: "550e8400-e29b-41d4-a716-446655440000",
+      filters: {
+        businessCategory: "",
+        location: "",
+        minRating: "",
+        maxRating: "",
+        minReviews: "",
+        maxReviews: "",
+        websiteCondition: "ANY",
+        phoneRequired: false,
+        emailRequired: false,
+        resultLimit: "10",
+      },
+    });
     expect(result.success).toBe(false);
   });
 });

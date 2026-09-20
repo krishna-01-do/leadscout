@@ -58,7 +58,7 @@ export function SearchInput({ onSearch, loading, disabled }: SearchInputProps) {
   });
 
   const handleSearch = useCallback(() => {
-    if (!prompt.trim() || loading || disabled) return;
+    if (!prompt.trim() || !filters.businessCategory.trim() || !filters.location.trim() || loading || disabled) return;
     onSearch(prompt.trim(), filters);
   }, [prompt, loading, disabled, onSearch, filters]);
 
@@ -85,29 +85,33 @@ export function SearchInput({ onSearch, loading, disabled }: SearchInputProps) {
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <Label htmlFor="target-business-type">Target business type</Label>
+          <Label htmlFor="target-business-type">Target business type <span className="text-destructive" aria-hidden="true">*</span><span className="sr-only"> (required)</span></Label>
           <Input
             id="target-business-type"
             value={filters.businessCategory}
             onChange={(e) => setFilters({ ...filters, businessCategory: e.target.value })}
             placeholder="e.g., dental clinics"
             disabled={disabled}
+            required
+            aria-required="true"
           />
           <p className="text-xs text-muted-foreground">
-            The type of business you want as leads—not your own business type. You can leave this blank when it is clear in the prompt.
+            Required. Enter the type of business you want as leads—not your own business type.
           </p>
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="target-location">Target location</Label>
+          <Label htmlFor="target-location">Target location <span className="text-destructive" aria-hidden="true">*</span><span className="sr-only"> (required)</span></Label>
           <Input
             id="target-location"
             value={filters.location}
             onChange={(e) => setFilters({ ...filters, location: e.target.value })}
             placeholder="e.g., Hyderabad"
             disabled={disabled}
+            required
+            aria-required="true"
           />
           <p className="text-xs text-muted-foreground">
-            The city, area, state, or country you want to target. You can leave this blank when it is clear in the prompt.
+            Required. Enter the city, area, state, or country you want to target.
           </p>
         </div>
       </div>
@@ -125,7 +129,7 @@ export function SearchInput({ onSearch, loading, disabled }: SearchInputProps) {
         ))}
       </div>
 
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
         <button
           onClick={() => setShowAdvanced(!showAdvanced)}
           disabled={disabled}
@@ -137,8 +141,9 @@ export function SearchInput({ onSearch, loading, disabled }: SearchInputProps) {
 
         <Button
           onClick={handleSearch}
-          disabled={!prompt.trim() || loading || disabled}
+          disabled={!prompt.trim() || !filters.businessCategory.trim() || !filters.location.trim() || loading || disabled}
           size="lg"
+          className="w-full sm:w-auto"
         >
           {loading ? (
             <>

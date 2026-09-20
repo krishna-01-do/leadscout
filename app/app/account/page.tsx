@@ -103,7 +103,7 @@ export default function AccountPage() {
   const planName = stats?.plan === "free" ? "Free Trial" : stats?.plan === "starter" ? "Starter" : stats?.plan === "pro" ? "Pro" : "Free Trial";
   const searchLimit = stats?.searchLimit ?? 1;
   const searchesUsed = stats?.searchesUsed ?? 0;
-  const leadLimit = stats?.leadLimit ?? 20;
+  const leadLimit = stats?.leadLimit ?? 10;
   const leadsUsed = stats?.leadsUsed ?? 0;
   const searchPercent = Math.min(100, (searchesUsed / searchLimit) * 100);
   const leadPercent = Math.min(100, (leadsUsed / leadLimit) * 100);
@@ -119,7 +119,7 @@ export default function AccountPage() {
 
       {paymentNotice && <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm">{paymentNotice}</div>}
 
-      <div className="rounded-2xl border border-border/60 bg-card p-6">
+      <div className="rounded-2xl border border-border/60 bg-card p-4 sm:p-6">
         <h2 className="text-sm font-medium text-muted-foreground mb-4">Profile</h2>
         <div className="space-y-3">
           <div className="flex items-center gap-3">
@@ -136,8 +136,8 @@ export default function AccountPage() {
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <Mail className="h-5 w-5" />
             </div>
-            <div>
-              <p className="text-sm font-medium">{user?.email}</p>
+            <div className="min-w-0">
+              <p className="break-all text-sm font-medium">{user?.email}</p>
               <p className="text-xs text-muted-foreground">Email</p>
             </div>
           </div>
@@ -146,8 +146,8 @@ export default function AccountPage() {
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <CreditCard className="h-5 w-5" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
                 <p className="text-sm font-medium">{planName}</p>
                 <Badge variant="secondary" className="capitalize">{stats?.plan ?? "free"}</Badge>
               </div>
@@ -158,7 +158,7 @@ export default function AccountPage() {
         <ProfileEditor />
       </div>
 
-      <div className="rounded-2xl border border-border/60 bg-card p-6">
+      <div className="rounded-2xl border border-border/60 bg-card p-4 sm:p-6">
         <h2 className="text-sm font-medium text-muted-foreground mb-4">Usage This Period</h2>
 
         {loading ? (
@@ -168,7 +168,7 @@ export default function AccountPage() {
         ) : (
           <div className="space-y-5">
             <div>
-              <div className="flex items-center justify-between mb-2">
+              <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <Search className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium">Searches</span>
@@ -188,7 +188,7 @@ export default function AccountPage() {
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-2">
+              <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <BarChart3 className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium">Leads Generated</span>
@@ -222,8 +222,8 @@ export default function AccountPage() {
         )}
       </div>
 
-      <div className="flex justify-end">
-        <Button variant="outline" onClick={handleSignOut} disabled={signingOut}>
+      <div className="flex justify-stretch sm:justify-end">
+        <Button className="w-full sm:w-auto" variant="outline" onClick={handleSignOut} disabled={signingOut}>
           {signingOut ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           ) : (

@@ -77,7 +77,7 @@ export default function SignupPage() {
         {branding.name}
       </Link>
 
-      <div className="w-full max-w-sm rounded-2xl border border-border/60 bg-card p-8 shadow-lg">
+      <div className="w-full max-w-sm rounded-2xl border border-border/60 bg-card p-5 shadow-lg sm:p-8">
         <h1 className="text-xl font-semibold">Create your account</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Get one free prospect search. No credit card required.

@@ -27,7 +27,7 @@ export function Pricing() {
             return (
             <div
               key={plan.name}
-              className={`relative rounded-2xl border bg-card p-6 ${
+              className={`relative min-w-0 rounded-2xl border bg-card p-5 sm:p-6 ${
                 i === featuredIndex
                   ? "border-primary shadow-lg shadow-primary/10 lg:scale-105"
                   : "border-border/60"
