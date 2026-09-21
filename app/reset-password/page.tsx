@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { branding } from "@/lib/branding";
+import { recordAuthActivity } from "@/lib/auth/inactivity";
 import { createBrowserClient, isSupabaseBrowserConfigured } from "@/lib/supabase/client";
 
 export default function ResetPasswordPage() {
@@ -29,13 +30,17 @@ export default function ResetPasswordPage() {
     let mounted = true;
     const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
       if (!mounted) return;
-      if (event === "PASSWORD_RECOVERY" || session) setHasRecoverySession(true);
+      if (event === "PASSWORD_RECOVERY" || session) {
+        if (session) recordAuthActivity(session.user.id);
+        setHasRecoverySession(true);
+      }
       setChecking(false);
     });
 
     void supabase.auth.getSession().then(({ data, error: sessionError }) => {
       if (!mounted) return;
       if (sessionError) setError(sessionError.message);
+      if (data.session) recordAuthActivity(data.session.user.id);
       setHasRecoverySession(Boolean(data.session));
       setChecking(false);
     });
@@ -66,6 +71,8 @@ export default function ResetPasswordPage() {
       setError(updateError.message);
       return;
     }
+    const { data } = await supabase.auth.getSession();
+    if (data.session) recordAuthActivity(data.session.user.id);
     setUpdated(true);
   }
 
