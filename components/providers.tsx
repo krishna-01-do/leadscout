@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { usePathname } from "next/navigation";
 import type { Session, User } from "@supabase/supabase-js";
 import { createBrowserClient, isSupabaseBrowserConfigured } from "@/lib/supabase/client";
 import {
@@ -26,6 +27,7 @@ const AuthContext = createContext<AuthContextValue>({
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
@@ -55,9 +57,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       if (active) {
         authEventReceived = true;
+        if (event === "PASSWORD_RECOVERY" && session) {
+          recordAuthActivity(session.user.id);
+        }
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
@@ -69,7 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const userId = session?.user.id;
-    if (!userId) return;
+    if (!userId || pathname === "/reset-password") return;
 
     let lastActivity = readLastActivity(userId) ?? Date.now();
     let timer: number | undefined;
@@ -131,7 +136,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       events.forEach((event) => window.removeEventListener(event, registerActivity));
       window.removeEventListener("storage", syncOtherTab);
     };
-  }, [session?.user.id, signOut]);
+  }, [pathname, session?.user.id, signOut]);
 
   return (
     <AuthContext.Provider value={{ user, session, loading, signOut }}>
