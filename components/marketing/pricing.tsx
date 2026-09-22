@@ -1,12 +1,12 @@
 import { Check } from "lucide-react";
-import { pricing } from "@/lib/branding";
+import { pricing, pricingPlanBenefits } from "@/lib/branding";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { planDetails } from "@/lib/payments/payu";
 
 export function Pricing() {
-  const plans = [pricing.free, pricing.starter, pricing.pro];
+  const planKeys = ["free", "starter", "pro"] as const;
   const featuredIndex = 1;
 
   return (
@@ -22,7 +22,8 @@ export function Pricing() {
         </div>
 
         <div className="mt-14 grid gap-6 lg:grid-cols-3">
-          {plans.map((plan, i) => {
+          {planKeys.map((key, i) => {
+            const plan = pricing[key];
             const paid = plan.name === "Starter" ? planDetails("starter") : plan.name === "Pro" ? planDetails("pro") : null;
             return (
             <div
@@ -44,17 +45,15 @@ export function Pricing() {
                 <span className="text-sm text-muted-foreground">/{plan.name === "Free" ? plan.period : "30 days"}</span>
               </div>
 
-              <div className="mt-4 space-y-1 text-sm text-muted-foreground">
-                <p>{plan.searches} searches per month</p>
-                <p>Up to {plan.leads} leads per search</p>
-                {"monthlyLeads" in plan && <p>Up to {plan.monthlyLeads.toLocaleString()} leads per month</p>}
-              </div>
+              <p className="mt-4 text-sm leading-6 text-muted-foreground">
+                {plan.value}
+              </p>
 
               <ul className="mt-6 space-y-3">
-                {plan.features.map((f) => (
-                  <li key={f} className="flex items-start gap-2 text-sm">
+                {pricingPlanBenefits(key).map((benefit) => (
+                  <li key={benefit} className="flex items-start gap-2 text-sm">
                     <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                    <span>{f}</span>
+                    <span>{benefit}</span>
                   </li>
                 ))}
               </ul>
