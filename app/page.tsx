@@ -5,6 +5,7 @@ import { ExampleSearches } from "@/components/marketing/example-searches";
 import { WhoItsFor } from "@/components/marketing/who-its-for";
 import { Features } from "@/components/marketing/features";
 import { ValueProp } from "@/components/marketing/value-prop";
+import { Testimonials } from "@/components/marketing/testimonials";
 import { Pricing } from "@/components/marketing/pricing";
 import { FAQ } from "@/components/marketing/faq";
 import { MarketingFooter } from "@/components/marketing/footer";
@@ -20,6 +21,7 @@ export default function Home() {
         <WhoItsFor />
         <Features />
         <ValueProp />
+        <Testimonials />
         <Pricing />
         <FAQ />
       </main>
