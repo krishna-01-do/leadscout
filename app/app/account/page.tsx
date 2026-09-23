@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PaymentPlanOptions } from "@/components/payments/payment-plan-options";
 import { ProfileEditor } from "@/components/account/profile-editor";
+import { trackMetaPurchase } from "@/lib/analytics/meta-pixel";
 
 export default function AccountPage() {
   const { user, session, signOut } = useAuth();
@@ -49,6 +50,11 @@ export default function AccountPage() {
       if (response.status === 401) return;
       if (body?.payment?.txnid) txnid = body.payment.txnid;
       if (body?.payment?.status === "success") {
+        trackMetaPurchase({
+          txnid: body.payment.txnid ?? txnid ?? "",
+          value: body.payment.amount,
+          plan: body.payment.plan,
+        });
         const usageResponse = await fetch("/api/usage", { headers: { Authorization: `Bearer ${session.access_token}` } });
         if (usageResponse.ok) setStats((await usageResponse.json()).stats);
         setPaymentNotice(null);

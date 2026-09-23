@@ -19,10 +19,10 @@ export async function GET(request: NextRequest) {
   const txnid = z.string().min(8).max(50).safeParse(requestedId);
   if (!txnid.success) return NextResponse.json({ error: "Invalid transaction" }, { status: 400 });
   const { data: existing, error: existingError } = await db.from("payments")
-    .select("status,plan,completed_at").eq("txnid", txnid.data).eq("user_id", user.id).maybeSingle();
+    .select("status,plan,amount,completed_at").eq("txnid", txnid.data).eq("user_id", user.id).maybeSingle();
   if (existingError || !existing) return NextResponse.json({ error: "Payment not found" }, { status: 404 });
   if (existing.status !== "success") await reconcilePayUPayment(txnid.data, user.id);
-  const { data, error } = await db.from("payments").select("status,plan,completed_at")
+  const { data, error } = await db.from("payments").select("status,plan,amount,completed_at")
     .eq("txnid", txnid.data).eq("user_id", user.id).maybeSingle();
   if (error || !data) return NextResponse.json({ error: "Payment not found" }, { status: 404 });
   return NextResponse.json({ payment: { ...data, txnid: txnid.data } }, { headers: { "Cache-Control": "private, no-store" } });
