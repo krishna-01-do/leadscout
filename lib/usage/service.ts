@@ -2,6 +2,8 @@ import "server-only";
 
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 
+const PAID_PLANS = new Set(["basic", "pro", "plus", "starter"]);
+
 export async function enforceRateLimit(
   userId: string,
   action: string,
@@ -37,6 +39,21 @@ export async function recordLeadUsage(
   }
 }
 
+function subscriptionIsActive(subscription: {
+  plan: string;
+  status: string;
+  period_start: string;
+  period_end: string;
+}) {
+  if (subscription.status !== "active") return false;
+  if (!PAID_PLANS.has(subscription.plan)) return false;
+  const now = Date.now();
+  const start = new Date(subscription.period_start).getTime();
+  const end = new Date(subscription.period_end).getTime();
+  if (!Number.isFinite(start) || !Number.isFinite(end)) return false;
+  return now >= start && now <= end;
+}
+
 export async function getUsageStats(userId: string) {
   const database = createSupabaseAdmin();
   const { data: subscription, error: subscriptionError } = await database
@@ -47,7 +64,30 @@ export async function getUsageStats(userId: string) {
 
   if (subscriptionError) throw new Error("Could not load subscription");
   if (!subscription) {
-    return { plan: "none", searchesUsed: 0, searchLimit: 0, leadsUsed: 0, leadLimit: 0 };
+    return {
+      plan: "none",
+      status: "inactive",
+      hasActivePlan: false,
+      searchesUsed: 0,
+      searchLimit: 0,
+      leadsUsed: 0,
+      leadLimit: 0,
+      periodEnd: null,
+    };
+  }
+
+  const active = subscriptionIsActive(subscription);
+  if (!active) {
+    return {
+      plan: subscription.plan === "free" || subscription.plan === "none" ? "none" : subscription.plan,
+      status: subscription.status === "active" ? "expired" : subscription.status,
+      hasActivePlan: false,
+      searchesUsed: 0,
+      searchLimit: 0,
+      leadsUsed: 0,
+      leadLimit: 0,
+      periodEnd: subscription.period_end,
+    };
   }
 
   const [{ count: searchesUsed, error: searchError }, { data: leadUsage, error: leadError }] =
@@ -63,9 +103,12 @@ export async function getUsageStats(userId: string) {
 
   return {
     plan: subscription.plan,
+    status: subscription.status,
+    hasActivePlan: true,
     searchesUsed: searchesUsed ?? 0,
     searchLimit: subscription.monthly_search_limit,
     leadsUsed: leadUsage?.reduce((sum, item) => sum + item.amount, 0) ?? 0,
     leadLimit: subscription.monthly_lead_limit,
+    periodEnd: subscription.period_end,
   };
 }
