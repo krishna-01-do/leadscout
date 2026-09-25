@@ -8,28 +8,29 @@ export const branding = {
 } as const;
 
 export const pricing = {
-  free: {
-    name: "Free",
-    price: 0,
-    period: "forever",
-    searches: 1,
-    leads: 10,
+  basic: {
+    name: "Basic",
+    period: "month",
+    searches: 10,
+    leads: 50,
+    monthlyLeads: 500,
     value:
-      "Validate your prospecting idea and turn one focused search into an outreach-ready lead list.",
+      "Start focused prospecting with enough capacity for your first outreach campaigns.",
     features: [
       "Prioritize promising prospects with opportunity scores",
       "Export your results to CSV for outreach",
-      "Revisit saved results without using another search",
+      "Reuse saved results without spending another search",
+      "Get email support when you need help",
     ],
   },
-  starter: {
-    name: "Starter",
+  pro: {
+    name: "Pro",
     period: "month",
     searches: 30,
     leads: 50,
     monthlyLeads: 1500,
     value:
-      "Build a repeatable prospecting pipeline with enough capacity for consistent monthly outreach.",
+      "Build a repeatable prospecting pipeline with capacity for consistent monthly outreach.",
     features: [
       "Keep every lead list focused with opportunity scores",
       "Move prospects into your outreach workflow with CSV export",
@@ -37,14 +38,14 @@ export const pricing = {
       "Get priority support when you need help",
     ],
   },
-  pro: {
-    name: "Pro",
+  plus: {
+    name: "Plus",
     period: "month",
     searches: 60,
     leads: 50,
     monthlyLeads: 3000,
     value:
-      "Scale prospecting across more markets with maximum capacity and precise, advanced targeting.",
+      "Scale prospecting across more markets with maximum capacity and precise targeting.",
     features: [
       "Target higher-fit prospects with advanced filters",
       "Prioritize larger lead lists with opportunity scores",
@@ -56,17 +57,9 @@ export const pricing = {
 } as const;
 
 export type PricingPlanKey = keyof typeof pricing;
+export type PaidPlanKey = PricingPlanKey;
 
 export function pricingPlanBenefits(key: PricingPlanKey) {
-  if (key === "free") {
-    const plan = pricing.free;
-    return [
-      `${plan.searches} focused search to try the full workflow`,
-      `Up to ${plan.leads} prospects in your search`,
-      ...plan.features,
-    ];
-  }
-
   const plan = pricing[key];
   return [
     `${plan.searches} searches every 30 days`,
@@ -76,3 +69,11 @@ export function pricingPlanBenefits(key: PricingPlanKey) {
   ];
 }
 
+export function planDisplayName(plan: string | null | undefined) {
+  if (plan === "basic") return "Basic";
+  if (plan === "pro") return "Pro";
+  if (plan === "plus") return "Plus";
+  if (plan === "starter") return "Pro";
+  if (plan === "free" || plan === "none" || !plan) return "No active plan";
+  return plan;
+}

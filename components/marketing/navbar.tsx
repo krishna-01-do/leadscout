@@ -18,7 +18,7 @@ export function MarketingNavbar() {
   ) : (
     <>
       <Link href="/login" onClick={() => setOpen(false)}><Button variant="ghost" size="sm">Log In</Button></Link>
-      <Link href="/signup" onClick={() => setOpen(false)}><Button size="sm">Find Leads Free</Button></Link>
+      <Link href="/signup" onClick={() => setOpen(false)}><Button size="sm">Get Started</Button></Link>
     </>
   );
 

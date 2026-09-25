@@ -31,7 +31,7 @@ export function Hero() {
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row animate-fade-in-up" style={{ animationDelay: "0.15s" }}>
           <Link href="/signup" className="w-full sm:w-auto">
             <Button size="lg" className="w-full sm:w-auto">
-              Find Leads Free
+              Find Prospects
               <Search className="ml-2 h-4 w-4" />
             </Button>
           </Link>

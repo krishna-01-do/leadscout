@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { branding } from "@/lib/branding";
 import { isAuthInactive, readLastActivity, recordAuthActivity } from "@/lib/auth/inactivity";
+import { GoogleAuthButton } from "@/components/auth/google-auth-button";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -19,16 +20,24 @@ export default function LoginPage() {
   const router = useRouter();
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const authError = params.get("error");
+    if (authError === "auth_callback") {
+      setError("Could not complete sign-in. Try again or confirm your email first.");
+    } else if (authError === "confirm_email") {
+      setError("Confirm your email before accessing your account.");
+    }
+
     if (!isSupabaseBrowserConfigured()) return;
     const supabase = createBrowserClient();
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) return;
+      if (!session?.user.email_confirmed_at) return;
       const lastActivity = readLastActivity(session.user.id);
       if (lastActivity && isAuthInactive(lastActivity)) {
         void supabase.auth.signOut();
         return;
       }
-      router.push("/app/search");
+      router.push("/app/account");
     });
   }, [router]);
 
@@ -44,19 +53,30 @@ export default function LoginPage() {
     }
 
     const supabase = createBrowserClient();
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
 
-    if (error) {
-      setError(error.message === "Invalid login credentials"
-        ? "Invalid email or password."
-        : error.message
-      );
+    if (signInError) {
+      const message = signInError.message.toLowerCase();
+      if (message.includes("email not confirmed") || message.includes("confirm")) {
+        setError("Confirm your email before signing in. Check your inbox for the verification link.");
+      } else if (signInError.message === "Invalid login credentials") {
+        setError("Invalid email or password.");
+      } else {
+        setError(signInError.message);
+      }
+      setLoading(false);
+      return;
+    }
+
+    if (data.user && !data.user.email_confirmed_at) {
+      await supabase.auth.signOut();
+      setError("Confirm your email before signing in. Check your inbox for the verification link.");
       setLoading(false);
       return;
     }
 
     if (data.user) recordAuthActivity(data.user.id);
-    router.push("/app/search");
+    router.push("/app/account");
   }
 
   return (
@@ -74,7 +94,19 @@ export default function LoginPage() {
           Sign in to your account to continue.
         </p>
 
-        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+        <div className="mt-6 space-y-4">
+          <GoogleAuthButton mode="signin" />
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-border/60" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-2 text-muted-foreground">Or continue with email</span>
+            </div>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <div className="relative">
@@ -112,9 +144,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {error && (
-            <p className="text-sm text-destructive">{error}</p>
-          )}
+          {error && <p className="text-sm text-destructive">{error}</p>}
 
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign In"}
@@ -122,9 +152,9 @@ export default function LoginPage() {
         </form>
 
         <p className="mt-6 text-center text-sm text-muted-foreground">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <Link href="/signup" className="font-medium text-primary hover:underline">
-            Sign up free
+            Sign up
           </Link>
         </p>
       </div>

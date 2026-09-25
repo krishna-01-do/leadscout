@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PaymentPlanOptions } from "@/components/payments/payment-plan-options";
 import { ProfileEditor } from "@/components/account/profile-editor";
+import { trackMetaPurchase } from "@/lib/analytics/meta-pixel";
+import { planDisplayName } from "@/lib/branding";
 
 export default function AccountPage() {
   const { user, session, signOut } = useAuth();
@@ -49,6 +51,11 @@ export default function AccountPage() {
       if (response.status === 401) return;
       if (body?.payment?.txnid) txnid = body.payment.txnid;
       if (body?.payment?.status === "success") {
+        trackMetaPurchase({
+          txnid: body.payment.txnid ?? txnid ?? "",
+          value: body.payment.amount,
+          plan: body.payment.plan,
+        });
         const usageResponse = await fetch("/api/usage", { headers: { Authorization: `Bearer ${session.access_token}` } });
         if (usageResponse.ok) setStats((await usageResponse.json()).stats);
         setPaymentNotice(null);
@@ -100,13 +107,13 @@ export default function AccountPage() {
     router.push("/");
   }
 
-  const planName = stats?.plan === "free" ? "Free Trial" : stats?.plan === "starter" ? "Starter" : stats?.plan === "pro" ? "Pro" : "Free Trial";
-  const searchLimit = stats?.searchLimit ?? 1;
+  const planName = planDisplayName(stats?.plan);
+  const searchLimit = stats?.searchLimit ?? 0;
   const searchesUsed = stats?.searchesUsed ?? 0;
-  const leadLimit = stats?.leadLimit ?? 10;
+  const leadLimit = stats?.leadLimit ?? 0;
   const leadsUsed = stats?.leadsUsed ?? 0;
-  const searchPercent = Math.min(100, (searchesUsed / searchLimit) * 100);
-  const leadPercent = Math.min(100, (leadsUsed / leadLimit) * 100);
+  const searchPercent = searchLimit > 0 ? Math.min(100, (searchesUsed / searchLimit) * 100) : 0;
+  const leadPercent = leadLimit > 0 ? Math.min(100, (leadsUsed / leadLimit) * 100) : 0;
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
@@ -149,7 +156,7 @@ export default function AccountPage() {
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <p className="text-sm font-medium">{planName}</p>
-                <Badge variant="secondary" className="capitalize">{stats?.plan ?? "free"}</Badge>
+                <Badge variant="secondary" className="capitalize">{stats?.plan ?? "none"}</Badge>
               </div>
               <p className="text-xs text-muted-foreground">Plan</p>
             </div>
@@ -214,7 +221,9 @@ export default function AccountPage() {
               <p className="text-sm font-medium">Manage your plan</p>
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
-              Upgrade or renew your current 30-day plan securely.
+              {stats.plan === "none" || stats.plan === "free"
+                ? "Choose a Basic, Pro, or Plus plan to unlock prospect searches."
+                : "Upgrade or renew your current 30-day plan securely."}
             </p>
             <PaymentPlanOptions currentPlan={stats.plan} />
             <p className="mt-3 text-xs text-muted-foreground text-center">Secure checkout powered by PayU.</p>

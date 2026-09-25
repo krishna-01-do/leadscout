@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
     );
     if (created.quotaExceeded) {
       return NextResponse.json(
-        { error: created.error, quotaExceeded: true, plan: "free" },
+        { error: created.error, quotaExceeded: true },
         { status: 403 }
       );
     }
