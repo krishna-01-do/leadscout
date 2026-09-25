@@ -27,7 +27,7 @@ describe("trackMetaPurchase", () => {
       trackMetaPurchase({
         txnid: "AVtxn123456",
         value: "599.00",
-        plan: "starter",
+        plan: "basic",
       })
     ).toBe(true);
 
@@ -37,9 +37,9 @@ describe("trackMetaPurchase", () => {
       {
         value: 599,
         currency: "INR",
-        content_name: "starter",
+        content_name: "basic",
         content_type: "product",
-        contents: [{ id: "starter", quantity: 1 }],
+        contents: [{ id: "basic", quantity: 1 }],
         num_items: 1,
       },
       { eventID: "AVtxn123456" }
@@ -49,7 +49,7 @@ describe("trackMetaPurchase", () => {
       trackMetaPurchase({
         txnid: "AVtxn123456",
         value: "599.00",
-        plan: "starter",
+        plan: "basic",
       })
     ).toBe(false);
     expect(fbq).toHaveBeenCalledTimes(1);
@@ -58,7 +58,7 @@ describe("trackMetaPurchase", () => {
   it("skips invalid amounts", () => {
     const fbq = vi.fn();
     mockWindow(fbq);
-    expect(trackMetaPurchase({ txnid: "AVtxn123456", value: "0", plan: "starter" })).toBe(false);
+    expect(trackMetaPurchase({ txnid: "AVtxn123456", value: "0", plan: "basic" })).toBe(false);
     expect(fbq).not.toHaveBeenCalled();
   });
 });

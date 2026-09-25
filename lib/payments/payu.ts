@@ -1,11 +1,11 @@
 import "server-only";
 
 import { randomBytes } from "crypto";
-import { pricing } from "@/lib/branding";
+import { pricing, type PaidPlanKey } from "@/lib/branding";
 import { normalizeVerification } from "./verification";
 import { createCheckoutHash, createResponseHash, createVerifyHash, hashesMatch } from "@/lib/payments/payu-hash";
 
-export type PaidPlan = "starter" | "pro";
+export type PaidPlan = PaidPlanKey;
 
 type PayUConfig = { key: string; salt: string; testMode: boolean };
 
@@ -17,6 +17,10 @@ function config(): PayUConfig | null {
 }
 
 export function payUIsConfigured() { return Boolean(config()); }
+
+export function isPaidPlan(plan: unknown): plan is PaidPlan {
+  return plan === "basic" || plan === "pro" || plan === "plus";
+}
 
 export function planDetails(plan: PaidPlan) {
   const item = pricing[plan];

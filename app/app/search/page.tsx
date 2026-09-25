@@ -68,6 +68,17 @@ export default function SearchPage() {
   }, [user, fetchUsage]);
 
   useEffect(() => {
+    if (!usage) return;
+    const inactive =
+      usage.searchLimit <= 0 ||
+      usage.plan === "none" ||
+      usage.plan === "free";
+    if (inactive || usage.searchesUsed >= usage.searchLimit) {
+      setQuotaExceeded(true);
+    }
+  }, [usage]);
+
+  useEffect(() => {
     const existingSearchId = searchParams.get("search");
     if (!user || !existingSearchId) return;
 
@@ -301,9 +312,9 @@ export default function SearchPage() {
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
             <Lock className="h-6 w-6" />
           </div>
-          <h2 className="mt-4 text-lg font-semibold">You've used your free lead search.</h2>
+          <h2 className="mt-4 text-lg font-semibold">Choose a plan to search.</h2>
           <p className="mt-1 text-sm text-muted-foreground max-w-sm">
-            Upgrade to continue finding qualified prospects with unlimited searches.
+            Activate Basic, Pro, or Plus on Account to find qualified prospects.
           </p>
           <Button className="mt-6" onClick={() => router.push("/app/account")}>
             <Sparkles className="mr-2 h-4 w-4" />

@@ -2,18 +2,7 @@ import { describe, expect, it } from "vitest";
 import { pricing, pricingPlanBenefits } from "@/lib/branding";
 
 describe("pricingPlanBenefits", () => {
-  it("builds free-plan allowances from centralized limits", () => {
-    const benefits = pricingPlanBenefits("free");
-
-    expect(benefits).toContain(
-      `${pricing.free.searches} focused search to try the full workflow`,
-    );
-    expect(benefits).toContain(
-      `Up to ${pricing.free.leads} prospects in your search`,
-    );
-  });
-
-  it.each(["starter", "pro"] as const)(
+  it.each(["basic", "pro", "plus"] as const)(
     "builds %s allowances from centralized limits",
     (key) => {
       const plan = pricing[key];
@@ -26,4 +15,11 @@ describe("pricingPlanBenefits", () => {
       );
     },
   );
+
+  it("defines the paid-only plan ladder", () => {
+    expect(Object.keys(pricing)).toEqual(["basic", "pro", "plus"]);
+    expect(pricing.basic.searches).toBe(10);
+    expect(pricing.pro.searches).toBe(30);
+    expect(pricing.plus.searches).toBe(60);
+  });
 });

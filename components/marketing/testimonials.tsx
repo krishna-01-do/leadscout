@@ -47,7 +47,7 @@ const testimonials = [
   },
   {
     quote:
-      "Starter plan covers our weekly city sweeps. I run one search per locality, score the list, export the top 20, and hand it to sales. Support also replied within an hour when I asked about result limits — that mattered when we were onboarding the team.",
+      "Basic plan covers our weekly city sweeps. I run one search per locality, score the list, export the top 20, and hand it to sales. Support also replied within an hour when I asked about result limits — that mattered when we were onboarding the team.",
     name: "Farah Siddiqui",
     role: "Sales manager, Northline Leads",
     location: "Delhi NCR",
@@ -55,7 +55,7 @@ const testimonials = [
   },
   {
     quote:
-      "Tried the free search first on ‘pet clinics in Coimbatore without a website.’ Got ten solid prospects with phones. Upgraded after that because rebuilding those lists manually was eating half my week.",
+      "Started on Basic for pet clinics in Coimbatore without a website. Got a solid scored list with phones, then moved to Pro once outreach was working. Beats rebuilding those lists manually every week.",
     name: "Arjun Iyer",
     role: "Independent marketer",
     location: "Coimbatore",

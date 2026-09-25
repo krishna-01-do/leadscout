@@ -116,8 +116,9 @@ Copy `.env.example` to `.env.local` and fill in:
 | `PAYU_MERCHANT_KEY` | For PayU | PayU merchant key; store as a Vercel Secret |
 | `PAYU_MERCHANT_SALT` | For PayU | PayU merchant salt; store as a Vercel Secret |
 | `PAYU_ENVIRONMENT` | For PayU | `test` while testing, then `production` |
-| `PAYU_STARTER_AMOUNT_INR` | For PayU | Starter selling price in INR, configured in Vercel |
+| `PAYU_BASIC_AMOUNT_INR` | For PayU | Basic selling price in INR, configured in Vercel |
 | `PAYU_PRO_AMOUNT_INR` | For PayU | Pro selling price in INR, configured in Vercel |
+| `PAYU_PLUS_AMOUNT_INR` | For PayU | Plus selling price in INR, configured in Vercel |
 
 **Without `OPENAI_API_KEY`**: a complete Business Category and Location in Advanced Filters can still start a search.
 There is no implicit mock fallback. To use synthetic data locally, explicitly set
@@ -128,7 +129,7 @@ There is no implicit mock fallback. To use synthetic data locally, explicitly se
 Apply all migrations in `supabase/migrations/` in filename order. They create:
 
 - `profiles` — User profile info
-- `subscriptions` — Plan info (free trial: 1 search, 20 leads)
+- `subscriptions` — Plan info (Basic / Pro / Plus; new accounts start inactive until payment)
 - `searches` — Search records with status tracking
 - `usage` — Usage tracking per period
 - `businesses` — Normalized business data (deduplicated)

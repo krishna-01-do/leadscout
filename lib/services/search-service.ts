@@ -58,15 +58,7 @@ export async function createSearch(
 }> {
   const database = createSupabaseAdmin();
   const provider = getProvider();
-  const { data: subscription } = await database
-    .from("subscriptions")
-    .select("plan")
-    .eq("user_id", userId)
-    .maybeSingle();
-  const requestedResultLimit = Math.min(
-    parsedQuery.resultLimit,
-    subscription?.plan === "free" ? 10 : 50
-  );
+  const requestedResultLimit = Math.min(parsedQuery.resultLimit, 50);
 
   const { data, error } = await database.rpc("create_search_with_quota", {
     p_user_id: userId,
@@ -78,14 +70,18 @@ export async function createSearch(
   });
 
   if (error) {
-    const quotaExceeded = error.message.includes("search_quota_exceeded") ||
-      error.message.includes("lead_quota_exceeded");
+    const quotaExceeded =
+      error.message.includes("search_quota_exceeded") ||
+      error.message.includes("lead_quota_exceeded") ||
+      error.message.includes("subscription_inactive");
     return {
       searchId: null,
       resultLimit: null,
-      error: quotaExceeded
-        ? "You've used all your searches or leads for this period. Upgrade to continue."
-        : "Failed to create search record.",
+      error: error.message.includes("subscription_inactive")
+        ? "Choose a plan on the Account page before running a search."
+        : quotaExceeded
+          ? "You've used all your searches or leads for this period. Upgrade to continue."
+          : "Failed to create search record.",
       quotaExceeded,
     };
   }

@@ -24,7 +24,7 @@ const faqs = [
   },
   {
     q: "Is there a free trial?",
-    a: "Yes. Every new account gets one free search that returns up to 10 leads. No credit card required. You can see the full results, export them, and decide if the tool is worth upgrading.",
+    a: "No free trial searches. Create an account, verify your email, and choose Basic, Pro, or Plus to start finding prospects. You can also sign up with Google.",
   },
   {
     q: "Will my old searches rerun and cost me credits?",
