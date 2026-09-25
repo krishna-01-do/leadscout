@@ -17,20 +17,20 @@ export function Pricing() {
             Simple Pricing
           </h2>
           <p className="mt-3 text-muted-foreground">
-            Choose a 30-day plan and start finding qualified local prospects.
+            Choose a monthly plan and start finding qualified local prospects.
           </p>
         </div>
 
-        <div className="mt-14 grid gap-6 lg:grid-cols-3">
+        <div className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {planKeys.map((key, i) => {
             const plan = pricing[key];
             const paid = planDetails(key);
             return (
               <div
                 key={plan.name}
-                className={`relative min-w-0 rounded-2xl border bg-card p-5 sm:p-6 ${
+                className={`relative flex min-h-full min-w-0 flex-col rounded-2xl border bg-card p-5 sm:p-6 ${
                   i === featuredIndex
-                    ? "border-primary shadow-lg shadow-primary/10 lg:scale-105"
+                    ? "border-primary shadow-lg shadow-primary/10"
                     : "border-border/60"
                 }`}
               >
@@ -42,16 +42,16 @@ export function Pricing() {
                 <h3 className="font-semibold text-lg">{plan.name}</h3>
                 <div className="mt-2 flex items-baseline gap-1">
                   <span className="text-3xl font-bold">
-                    {paid ? `₹${paid.amount}` : "Contact us"}
+                    {paid ? `₹${Number(paid.amount).toLocaleString("en-IN")}` : "Contact us"}
                   </span>
-                  <span className="text-sm text-muted-foreground">/30 days</span>
+                  <span className="text-sm text-muted-foreground">/month</span>
                 </div>
 
                 <p className="mt-4 text-sm leading-6 text-muted-foreground">
                   {plan.value}
                 </p>
 
-                <ul className="mt-6 space-y-3">
+                <ul className="mt-6 flex-1 space-y-3">
                   {pricingPlanBenefits(key).map((benefit) => (
                     <li key={benefit} className="flex items-start gap-2 text-sm">
                       <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />

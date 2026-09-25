@@ -156,7 +156,7 @@ export default function AccountPage() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Account</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Manage your profile, usage, and 30-day prospecting plan.
+          Manage your profile, usage, and monthly prospecting plan.
         </p>
       </div>
 
@@ -269,7 +269,7 @@ export default function AccountPage() {
             <div className="mt-5 rounded-2xl border border-dashed border-border/70 bg-muted/20 px-4 py-8 text-center">
               <p className="text-sm font-medium">No active plan yet</p>
               <p className="mt-1 text-sm text-muted-foreground">
-                Search and lead allowances appear here after you activate a 30-day plan.
+                Search and lead allowances appear here after you activate a monthly plan.
               </p>
             </div>
           )}
@@ -277,17 +277,17 @@ export default function AccountPage() {
       </div>
 
       {stats && (
-        <section className="overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/[0.07] via-card to-card p-5 sm:p-8">
+        <section className="overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/[0.07] via-card to-card p-4 sm:rounded-3xl sm:p-8">
           <div className="mx-auto max-w-3xl text-center">
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-background/80 px-3 py-1 text-xs font-medium text-primary">
               <Sparkles className="h-3.5 w-3.5" />
               {hasActivePlan ? "Renew or upgrade" : "Choose your plan"}
             </div>
-            <h2 className="mt-4 text-2xl font-bold tracking-tight sm:text-3xl">
+            <h2 className="mt-4 text-xl font-bold tracking-tight sm:text-3xl">
               {hasActivePlan ? "Keep your prospecting capacity active" : "Unlock prospect searches"}
             </h2>
             <p className="mt-2 text-sm text-muted-foreground sm:text-base">
-              Plans are 30-day purchases. When the period ends, renew to refresh your search and lead quota.
+              Plans are billed monthly. When the period ends, renew to refresh your search and lead quota.
               Automatic recurring billing is not charged.
             </p>
           </div>
