@@ -62,9 +62,9 @@ export type PaidPlanKey = PricingPlanKey;
 export function pricingPlanBenefits(key: PricingPlanKey) {
   const plan = pricing[key];
   return [
-    `${plan.searches} searches every 30 days`,
+    `${plan.searches} searches per month`,
     `Up to ${plan.leads} leads per search`,
-    `Up to ${plan.monthlyLeads.toLocaleString()} leads every 30 days`,
+    `Up to ${plan.monthlyLeads.toLocaleString()} leads per month`,
     ...plan.features,
   ];
 }

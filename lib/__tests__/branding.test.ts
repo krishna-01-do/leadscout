@@ -8,10 +8,10 @@ describe("pricingPlanBenefits", () => {
       const plan = pricing[key];
       const benefits = pricingPlanBenefits(key);
 
-      expect(benefits).toContain(`${plan.searches} searches every 30 days`);
+      expect(benefits).toContain(`${plan.searches} searches per month`);
       expect(benefits).toContain(`Up to ${plan.leads} leads per search`);
       expect(benefits).toContain(
-        `Up to ${plan.monthlyLeads.toLocaleString()} leads every 30 days`,
+        `Up to ${plan.monthlyLeads.toLocaleString()} leads per month`,
       );
     },
   );

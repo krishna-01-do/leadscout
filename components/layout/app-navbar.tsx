@@ -38,11 +38,11 @@ export function AppNavbar() {
     <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-2 px-3 sm:px-6">
         <div className="flex min-w-0 items-center gap-2 sm:gap-6">
-          <Link href="/app/search" className="flex items-center gap-2 font-semibold">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+          <Link href="/" className="flex min-w-0 items-center gap-2 font-semibold">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
               <Search className="h-3.5 w-3.5" />
             </div>
-            <span className="hidden sm:inline">{branding.name}</span>
+            <span className="max-w-[7.5rem] truncate text-sm sm:max-w-none sm:text-base">{branding.name}</span>
           </Link>
 
           <nav className="flex items-center gap-0.5 sm:gap-1">

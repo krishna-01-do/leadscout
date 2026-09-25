@@ -40,7 +40,7 @@ export function PaymentPlanOptions({
     <div
       className={cn(
         "mt-6 grid gap-4",
-        choices.length === 1 ? "grid-cols-1 max-w-md mx-auto" : "grid-cols-1 md:grid-cols-2 xl:grid-cols-3"
+        choices.length === 1 ? "mx-auto grid-cols-1 max-w-md" : "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3"
       )}
     >
       {choices.map((key) => {
@@ -53,7 +53,7 @@ export function PaymentPlanOptions({
           <div
             key={key}
             className={cn(
-              "relative flex min-h-full min-w-0 flex-col rounded-2xl border bg-background p-5 sm:p-6",
+              "relative flex min-h-full min-w-0 flex-col rounded-2xl border bg-background p-4 sm:p-6",
               isFeatured
                 ? "border-primary shadow-lg shadow-primary/15 ring-1 ring-primary/30"
                 : "border-border/70"
@@ -76,7 +76,7 @@ export function PaymentPlanOptions({
                 <span className="text-3xl font-bold tracking-tight">
                   {plan ? `₹${Number(plan.amount).toLocaleString("en-IN")}` : "Configure"}
                 </span>
-                <span className="text-sm font-normal text-muted-foreground">/30 days</span>
+                <span className="text-sm font-normal text-muted-foreground">/month</span>
               </p>
             </div>
 
