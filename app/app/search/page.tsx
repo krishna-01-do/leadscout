@@ -43,7 +43,12 @@ export default function SearchPage() {
   const [error, setError] = useState<string | null>(null);
   const [quotaExceeded, setQuotaExceeded] = useState(false);
   const [exporting, setExporting] = useState(false);
-  const [usage, setUsage] = useState<{ searchesUsed: number; searchLimit: number; plan: string } | null>(null);
+  const [usage, setUsage] = useState<{
+    searchesUsed: number;
+    searchLimit: number;
+    plan: string;
+    hasActivePlan?: boolean;
+  } | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const pollRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -69,10 +74,7 @@ export default function SearchPage() {
 
   useEffect(() => {
     if (!usage) return;
-    const inactive =
-      usage.searchLimit <= 0 ||
-      usage.plan === "none" ||
-      usage.plan === "free";
+    const inactive = !usage.hasActivePlan || usage.searchLimit <= 0;
     if (inactive || usage.searchesUsed >= usage.searchLimit) {
       setQuotaExceeded(true);
     }

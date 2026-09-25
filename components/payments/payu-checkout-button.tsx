@@ -6,8 +6,17 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/components/providers";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import type { PaidPlanKey } from "@/lib/branding";
+import { cn } from "@/lib/utils";
 
-export function PayUCheckoutButton({ plan }: { plan: PaidPlanKey }) {
+export function PayUCheckoutButton({
+  plan,
+  label = "Upgrade with PayU",
+  featured = false,
+}: {
+  plan: PaidPlanKey;
+  label?: string;
+  featured?: boolean;
+}) {
   const { session } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -49,8 +58,11 @@ export function PayUCheckoutButton({ plan }: { plan: PaidPlanKey }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" className="mt-3 w-full">
-          Upgrade with PayU
+        <Button
+          className={cn("w-full", featured ? "h-11 text-sm font-semibold" : "h-11")}
+          variant={featured ? "default" : "outline"}
+        >
+          {label}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">

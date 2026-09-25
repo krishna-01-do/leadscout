@@ -3,7 +3,9 @@
 import { useEffect, useState } from "react";
 import { Check } from "lucide-react";
 import { PayUCheckoutButton } from "@/components/payments/payu-checkout-button";
+import { Badge } from "@/components/ui/badge";
 import { pricing, pricingPlanBenefits, type PaidPlanKey } from "@/lib/branding";
+import { cn } from "@/lib/utils";
 
 type Plan = {
   amount: string;
@@ -16,7 +18,13 @@ function planChoices(currentPlan: string): PaidPlanKey[] {
   return ["basic", "pro", "plus"];
 }
 
-export function PaymentPlanOptions({ currentPlan }: { currentPlan: string }) {
+export function PaymentPlanOptions({
+  currentPlan,
+  hasActivePlan = false,
+}: {
+  currentPlan: string;
+  hasActivePlan?: boolean;
+}) {
   const [plans, setPlans] = useState<Partial<Record<PaidPlanKey, Plan>> | null>(null);
   useEffect(() => {
     fetch("/api/payments/plans")
@@ -26,33 +34,76 @@ export function PaymentPlanOptions({ currentPlan }: { currentPlan: string }) {
   }, []);
 
   const choices = planChoices(currentPlan);
+  const featured = choices.includes("pro") ? "pro" : choices[0];
 
   return (
-    <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    <div
+      className={cn(
+        "mt-6 grid gap-4",
+        choices.length === 1 ? "grid-cols-1 max-w-md mx-auto" : "grid-cols-1 md:grid-cols-2 xl:grid-cols-3"
+      )}
+    >
       {choices.map((key) => {
         const plan = plans?.[key] ?? null;
         const planCopy = pricing[key];
+        const isFeatured = key === featured && choices.length > 1;
+        const isCurrent = hasActivePlan && currentPlan === key;
+
         return (
-          <div key={key} className="min-w-0 rounded-lg border border-border/60 p-3">
-            <p className="text-sm font-semibold">{planCopy.name}</p>
-            <p className="flex flex-wrap items-baseline text-lg font-bold">
-              {plan ? `₹${plan.amount}` : "Configure price"}
-              <span className="text-xs font-normal text-muted-foreground">/30 days</span>
-            </p>
-            <p className="mt-2 text-xs leading-5 text-muted-foreground">{planCopy.value}</p>
-            <ul className="mt-3 space-y-2 border-t border-border/60 pt-3">
+          <div
+            key={key}
+            className={cn(
+              "relative flex min-h-full min-w-0 flex-col rounded-2xl border bg-background p-5 sm:p-6",
+              isFeatured
+                ? "border-primary shadow-lg shadow-primary/15 ring-1 ring-primary/30"
+                : "border-border/70"
+            )}
+          >
+            {isFeatured && (
+              <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 px-3">
+                Most Popular
+              </Badge>
+            )}
+            {isCurrent && (
+              <Badge variant="secondary" className="absolute -top-3 right-4">
+                Current
+              </Badge>
+            )}
+
+            <div className="space-y-1">
+              <p className="text-lg font-semibold tracking-tight">{planCopy.name}</p>
+              <p className="flex flex-wrap items-baseline gap-1">
+                <span className="text-3xl font-bold tracking-tight">
+                  {plan ? `₹${Number(plan.amount).toLocaleString("en-IN")}` : "Configure"}
+                </span>
+                <span className="text-sm font-normal text-muted-foreground">/30 days</span>
+              </p>
+            </div>
+
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">{planCopy.value}</p>
+
+            <ul className="mt-5 flex-1 space-y-3 border-t border-border/60 pt-5">
               {pricingPlanBenefits(key).map((benefit) => (
-                <li key={benefit} className="flex items-start gap-2 text-xs text-muted-foreground">
-                  <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
+                <li key={benefit} className="flex items-start gap-2.5 text-sm text-foreground/90">
+                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                    <Check className="h-3.5 w-3.5" />
+                  </span>
                   <span>{benefit}</span>
                 </li>
               ))}
             </ul>
-            {plan ? (
-              <PayUCheckoutButton plan={key} />
-            ) : (
-              <p className="mt-3 text-xs text-muted-foreground">PayU pricing is not configured.</p>
-            )}
+
+            <div className="mt-6">
+              {plan ? (
+                <PayUCheckoutButton
+                  plan={key}
+                  label={isCurrent ? `Renew ${planCopy.name}` : `Get ${planCopy.name}`}
+                  featured={isFeatured}
+                />
+              ) : (
+                <p className="text-sm text-muted-foreground">PayU pricing is not configured.</p>
+              )}
+            </div>
           </div>
         );
       })}
