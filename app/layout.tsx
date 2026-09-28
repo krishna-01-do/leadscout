@@ -1,11 +1,17 @@
 import './globals.css';
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Instrument_Serif, Inter } from 'next/font/google';
 import Script from 'next/script';
 import { branding } from '@/lib/branding';
 import { AuthProvider } from '@/components/providers';
 
 const inter = Inter({ subsets: ['latin'] });
+const display = Instrument_Serif({
+  subsets: ['latin'],
+  weight: '400',
+  style: ['normal', 'italic'],
+  variable: '--font-display',
+});
 
 export const metadata: Metadata = {
   title: `${branding.name} — ${branding.tagline}`,
@@ -64,7 +70,7 @@ fbq('track', 'PageView');`}
           }}
         />
       </head>
-      <body className={inter.className} suppressHydrationWarning><AuthProvider>{children}</AuthProvider></body>
+      <body className={`${inter.className} ${display.variable}`} suppressHydrationWarning><AuthProvider>{children}</AuthProvider></body>
     </html>
   );
 }

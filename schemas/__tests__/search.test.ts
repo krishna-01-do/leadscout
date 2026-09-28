@@ -129,9 +129,29 @@ describe("createSearchRequestSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("should require explicit target fields", () => {
+  it("should allow a blank client type when the area is selected", () => {
     const result = createSearchRequestSchema.safeParse({
-      prompt: "Find dental clinics in Hyderabad without a website",
+      prompt: "I build appointment automation for clinics",
+      idempotencyKey: "550e8400-e29b-41d4-a716-446655440000",
+      filters: {
+        businessCategory: "",
+        location: "Pune",
+        minRating: "",
+        maxRating: "",
+        minReviews: "",
+        maxReviews: "",
+        websiteCondition: "ANY",
+        phoneRequired: false,
+        emailRequired: false,
+        resultLimit: "10",
+      },
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("should require a selected area", () => {
+    const result = createSearchRequestSchema.safeParse({
+      prompt: "I build appointment automation for clinics",
       idempotencyKey: "550e8400-e29b-41d4-a716-446655440000",
       filters: {
         businessCategory: "",

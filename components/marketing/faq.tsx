@@ -8,7 +8,7 @@ import {
 const faqs = [
   {
     q: "What does ApplyVelocity actually do?",
-    a: "You describe the businesses you want to target in plain English — like 'Find dental clinics in Hyderabad without a website.' We interpret your prompt, search for matching businesses, score each one based on your criteria, and present the results in a clean table you can filter, sort, and export to CSV.",
+    a: "You describe your business, the service you sell, or the clients you want — for example, 'I built appointment automation. Find clinics in Pune I can sell it to.' You choose the area. We turn that into a scored client list you can filter, sort, and export to CSV.",
   },
   {
     q: "Do I need to know how to scrape Google Maps?",
@@ -16,7 +16,7 @@ const faqs = [
   },
   {
     q: "What is an 'opportunity score'?",
-    a: "Every business in your results gets a match score from 0 to 100 based on how well it meets your criteria — category, location, website status, rating, reviews, and contact availability. This helps you prioritize which prospects to reach out to first.",
+    a: "Every business gets a match score from 0 to 100 based on how well it fits the clients you asked for — category, location, rating, reviews, and contact availability. The reason next to each result tells you why they belong on the list.",
   },
   {
     q: "Can I export the results?",

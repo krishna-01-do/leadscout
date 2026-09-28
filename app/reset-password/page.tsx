@@ -77,7 +77,7 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center px-4 py-10">
+    <main className="marketing-stage flex min-h-screen flex-col items-center justify-center px-4 py-10">
       <Link href="/" className="mb-8 flex items-center gap-2 text-lg font-semibold">
         <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
           <Search className="h-4 w-4" />
@@ -93,7 +93,7 @@ export default function ResetPasswordPage() {
           <div className="flex justify-center py-10"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
         ) : updated ? (
           <div className="mt-6 space-y-5 text-center">
-            <CheckCircle2 className="mx-auto h-10 w-10 text-emerald-600" />
+            <CheckCircle2 className="mx-auto h-10 w-10 text-emerald-300" />
             <p className="text-sm text-muted-foreground">Your password has been updated successfully.</p>
             <Button className="w-full" asChild><Link href="/app/search">Continue to ApplyVelocity</Link></Button>
           </div>

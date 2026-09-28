@@ -281,7 +281,7 @@ export default function SearchPage() {
         <p className="section-kicker">Workspace</p>
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Find Prospects</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Describe the businesses you want to target. We'll find, research, and qualify them for you.
+          Describe your offer or the clients you want. We build the best client list for the area you select.
         </p>
       </div>
 

@@ -164,11 +164,97 @@
   }
 }
 
+.font-display {
+  font-family: var(--font-display), Georgia, "Times New Roman", serif;
+}
+
+.marketing-stage {
+  --background: 206 48% 7%;
+  --foreground: 188 40% 96%;
+  --card: 204 42% 11%;
+  --card-foreground: 188 40% 96%;
+  --popover: 204 42% 11%;
+  --popover-foreground: 188 40% 96%;
+  --primary: 190 92% 52%;
+  --primary-foreground: 206 50% 8%;
+  --secondary: 204 32% 16%;
+  --secondary-foreground: 188 40% 96%;
+  --muted: 204 28% 15%;
+  --muted-foreground: 196 18% 74%;
+  --accent: 190 92% 52%;
+  --accent-foreground: 206 50% 8%;
+  --border: 196 28% 24%;
+  --input: 196 28% 24%;
+  --ring: 190 92% 52%;
+  position: relative;
+  min-height: 100vh;
+  color: hsl(var(--foreground));
+  background:
+    radial-gradient(ellipse 70% 42% at 50% -8%, hsl(190 95% 48% / 0.28), transparent 58%),
+    radial-gradient(ellipse 40% 30% at 85% 18%, hsl(174 80% 46% / 0.16), transparent 55%),
+    linear-gradient(180deg, hsl(210 52% 5%) 0%, hsl(203 58% 10%) 48%, hsl(196 62% 16%) 100%);
+}
+
+.marketing-stage h1,
+.marketing-stage section h2 {
+  font-family: var(--font-display), Georgia, "Times New Roman", serif;
+  font-weight: 400;
+  letter-spacing: -0.03em;
+}
+
+.stage-grid {
+  background-image:
+    linear-gradient(hsl(186 80% 78% / 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(186 80% 78% / 0.07) 1px, transparent 1px);
+  background-size: 76px 76px;
+  mask-image: linear-gradient(to bottom, black 0%, transparent 78%);
+}
+
+.aurora-bars {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  height: min(78%, 640px);
+  align-items: flex-end;
+  gap: 8px;
+  padding: 0 3%;
+  pointer-events: none;
+  mask-image: linear-gradient(to top, black 8%, transparent 92%);
+}
+
+.aurora-bar {
+  flex: 1;
+  height: var(--bar-height, 70%);
+  transform-origin: bottom;
+  border-radius: 999px 999px 0 0;
+  background: linear-gradient(
+    to top,
+    hsl(187 96% 58% / 0.72),
+    hsl(190 90% 48% / 0.18) 55%,
+    transparent
+  );
+  animation: bar-glow 5.5s ease-in-out infinite;
+}
+
+@keyframes bar-glow {
+  0%, 100% {
+    opacity: 0.45;
+    transform: scaleY(0.82);
+  }
+  50% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-in-up,
   .animate-float,
   .animate-pulse-soft,
-  .shimmer {
+  .shimmer,
+  .aurora-bar {
     animation: none;
   }
 

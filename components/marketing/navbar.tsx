@@ -18,12 +18,12 @@ export function MarketingNavbar() {
   ) : (
     <>
       <Link href="/login" onClick={() => setOpen(false)}><Button variant="ghost" size="sm">Log In</Button></Link>
-      <Link href="/signup" onClick={() => setOpen(false)}><Button size="sm">Get Started</Button></Link>
+      <Link href="/signup" onClick={() => setOpen(false)}><Button size="sm" className="rounded-full bg-white text-slate-950 shadow-none hover:bg-cyan-50">Get Started</Button></Link>
     </>
   );
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-white/60 bg-background/75 shadow-sm shadow-primary/5 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-slate-950/45 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
         <Link href="/" className="flex min-w-0 items-center gap-2 text-base font-semibold sm:text-lg">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
@@ -33,16 +33,16 @@ export function MarketingNavbar() {
         </Link>
 
         <nav className="hidden items-center gap-6 md:flex">
-          <Link href="/#how-it-works" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <Link href="/#how-it-works" className="text-sm text-cyan-50/70 transition-colors hover:text-white">
             How It Works
           </Link>
-          <Link href="/#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <Link href="/#features" className="text-sm text-cyan-50/70 transition-colors hover:text-white">
             Features
           </Link>
-          <Link href="/#pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <Link href="/#pricing" className="text-sm text-cyan-50/70 transition-colors hover:text-white">
             Pricing
           </Link>
-          <Link href="/#faq" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <Link href="/#faq" className="text-sm text-cyan-50/70 transition-colors hover:text-white">
             FAQ
           </Link>
         </nav>
@@ -51,13 +51,13 @@ export function MarketingNavbar() {
           {accountActions}
         </div>
 
-        <button className="md:hidden" onClick={() => setOpen(!open)} aria-label="Toggle menu">
+        <button className="text-white md:hidden" onClick={() => setOpen(!open)} aria-label="Toggle menu">
           {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
       </div>
 
       {open && (
-        <div className="border-t border-border/60 bg-background md:hidden">
+        <div className="border-t border-white/10 bg-slate-950/95 md:hidden">
           <nav className="flex flex-col gap-4 px-4 py-4">
             <Link href="/#how-it-works" onClick={() => setOpen(false)} className="text-sm text-muted-foreground hover:text-foreground">
               How It Works

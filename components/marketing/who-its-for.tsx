@@ -1,8 +1,8 @@
 import { Code2, User, Search, Target, Phone, Megaphone } from "lucide-react";
 
 const audiences = [
-  { icon: Code2, label: "Web development agencies" },
-  { icon: User, label: "Freelancers" },
+  { icon: Code2, label: "Automation builders" },
+  { icon: User, label: "Freelancers and agencies" },
   { icon: Search, label: "SEO agencies" },
   { icon: Target, label: "Lead-generation agencies" },
   { icon: Phone, label: "Appointment setters" },
@@ -17,7 +17,7 @@ export function WhoItsFor() {
           Who It's For
         </h2>
         <p className="mt-2 text-center text-sm text-muted-foreground">
-          Built for anyone who needs to find local business prospects.
+          Built for anyone who sells a service and needs local clients.
         </p>
 
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

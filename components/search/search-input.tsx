@@ -16,10 +16,10 @@ import {
 import { Switch } from "@/components/ui/switch";
 
 const promptChips = [
-  "Find dentists without websites in Hyderabad",
-  "Find gyms with 100+ reviews in Pune",
-  "Find restaurants without online ordering in Mumbai",
-  "Find salons with weak websites in Bangalore",
+  "I build appointment automation for clinics",
+  "I sell review follow-ups to restaurants",
+  "Find gyms that need booking software",
+  "Local clinics for a marketing agency",
 ];
 
 interface AdvancedFilters {
@@ -58,7 +58,7 @@ export function SearchInput({ onSearch, loading, disabled }: SearchInputProps) {
   });
 
   const handleSearch = useCallback(() => {
-    if (!prompt.trim() || !filters.businessCategory.trim() || !filters.location.trim() || loading || disabled) return;
+    if (!prompt.trim() || !filters.location.trim() || loading || disabled) return;
     onSearch(prompt.trim(), filters);
   }, [prompt, loading, disabled, onSearch, filters]);
 
@@ -76,7 +76,7 @@ export function SearchInput({ onSearch, loading, disabled }: SearchInputProps) {
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Describe the businesses you want to find..."
+          placeholder="Describe your business, the service you sell, or the clients you want..."
           className="min-h-[100px] resize-none border-2 pr-12 text-base"
           disabled={disabled}
         />
@@ -85,18 +85,16 @@ export function SearchInput({ onSearch, loading, disabled }: SearchInputProps) {
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <Label htmlFor="target-business-type">Target business type <span className="text-destructive" aria-hidden="true">*</span><span className="sr-only"> (required)</span></Label>
+          <Label htmlFor="target-business-type">Client type</Label>
           <Input
             id="target-business-type"
             value={filters.businessCategory}
             onChange={(e) => setFilters({ ...filters, businessCategory: e.target.value })}
-            placeholder="e.g., dental clinics"
+            placeholder="Optional, e.g., dental clinics"
             disabled={disabled}
-            required
-            aria-required="true"
           />
           <p className="text-xs text-muted-foreground">
-            Required. Enter the type of business you want as leads—not your own business type.
+            Optional. Name the clients if you already know them. Otherwise we infer them from your prompt.
           </p>
         </div>
         <div className="space-y-1.5">
@@ -111,7 +109,7 @@ export function SearchInput({ onSearch, loading, disabled }: SearchInputProps) {
             aria-required="true"
           />
           <p className="text-xs text-muted-foreground">
-            Required. Enter the city, area, state, or country you want to target.
+            Required. The city or area where you want that client list.
           </p>
         </div>
       </div>
@@ -141,7 +139,7 @@ export function SearchInput({ onSearch, loading, disabled }: SearchInputProps) {
 
         <Button
           onClick={handleSearch}
-          disabled={!prompt.trim() || !filters.businessCategory.trim() || !filters.location.trim() || loading || disabled}
+          disabled={!prompt.trim() || !filters.location.trim() || loading || disabled}
           size="lg"
           className="w-full sm:w-auto"
         >

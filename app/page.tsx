@@ -12,7 +12,7 @@ import { MarketingFooter } from "@/components/marketing/footer";
 
 export default function Home() {
   return (
-    <>
+    <div className="marketing-stage">
       <MarketingNavbar />
       <main>
         <Hero />
@@ -26,6 +26,6 @@ export default function Home() {
         <FAQ />
       </main>
       <MarketingFooter />
-    </>
+    </div>
   );
 }

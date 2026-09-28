@@ -23,7 +23,7 @@ export function ValueProp() {
                 <span className="text-sm font-medium">Use</span>
               </div>
               <p className="mt-2 text-xl font-bold">
-                One prompt → qualified list
+                One prompt and an area → a client list
               </p>
             </div>
           </div>
