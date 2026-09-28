@@ -53,10 +53,8 @@ export function PaymentPlanOptions({
           <div
             key={key}
             className={cn(
-              "relative flex min-h-full min-w-0 flex-col rounded-2xl border bg-background p-4 sm:p-6",
-              isFeatured
-                ? "border-primary shadow-lg shadow-primary/15 ring-1 ring-primary/30"
-                : "border-border/70"
+              "premium-card relative flex min-h-full min-w-0 flex-col bg-background p-4 sm:p-6",
+              isFeatured && "border-primary shadow-xl shadow-primary/20 ring-1 ring-primary/30"
             )}
           >
             {isFeatured && (

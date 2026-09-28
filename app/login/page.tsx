@@ -88,7 +88,7 @@ export default function LoginPage() {
         {branding.name}
       </Link>
 
-      <div className="w-full max-w-sm rounded-2xl border border-border/60 bg-card p-5 shadow-lg sm:p-8">
+      <div className="premium-card w-full max-w-sm p-5 sm:p-8">
         <h1 className="text-xl font-semibold">Welcome back</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Sign in to your account to continue.

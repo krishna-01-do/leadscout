@@ -89,7 +89,7 @@ export default function SignupPage() {
         {branding.name}
       </Link>
 
-      <div className="w-full max-w-sm rounded-2xl border border-border/60 bg-card p-5 shadow-lg sm:p-8">
+      <div className="premium-card w-full max-w-sm p-5 sm:p-8">
         {pendingVerification ? (
           <div className="space-y-4 text-center">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">

@@ -63,9 +63,13 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
     overflow-wrap: anywhere;
+    background-image:
+      radial-gradient(ellipse 90% 45% at 50% -12%, hsl(var(--primary) / 0.16), transparent 58%),
+      radial-gradient(ellipse 36% 28% at 100% 0%, hsl(217 91% 60% / 0.08), transparent 52%),
+      radial-gradient(ellipse 28% 24% at 0% 18%, hsl(var(--primary) / 0.07), transparent 48%);
   }
 }
 
@@ -74,7 +78,23 @@
     text-wrap: balance;
   }
   .gradient-text {
-    @apply bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-sky-500 via-primary to-blue-700 bg-clip-text text-transparent;
+  }
+  .premium-card {
+    @apply rounded-2xl border bg-card backdrop-blur-sm transition-all duration-300;
+    border-color: hsl(var(--border) / 0.8);
+    box-shadow: 0 12px 40px -24px hsl(var(--primary) / 0.55);
+  }
+  .premium-card:hover {
+    transform: translateY(-4px);
+    border-color: hsl(var(--primary) / 0.28);
+    box-shadow: 0 22px 50px -24px hsl(var(--primary) / 0.7);
+  }
+  .section-kicker {
+    @apply mb-3 inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold uppercase text-primary;
+    letter-spacing: 0.16em;
+    border-color: hsl(var(--primary) / 0.18);
+    background: hsl(var(--primary) / 0.1);
   }
   .shimmer {
     background: linear-gradient(
@@ -123,4 +143,38 @@
 
 .animate-pulse-soft {
   animation: pulse-soft 2s ease-in-out infinite;
+}
+
+@keyframes float-soft {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.animate-float {
+  animation: float-soft 6s ease-in-out infinite;
+}
+
+@media (min-width: 768px) {
+  body {
+    background-attachment: fixed;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in-up,
+  .animate-float,
+  .animate-pulse-soft,
+  .shimmer {
+    animation: none;
+  }
+
+  .premium-card,
+  .premium-card:hover {
+    transform: none;
+    transition: none;
+  }
 }

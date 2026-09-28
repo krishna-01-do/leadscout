@@ -104,7 +104,7 @@ export function Testimonials() {
   return (
     <section
       id="testimonials"
-      className="border-y border-border/40 bg-muted/30 py-20 sm:py-28"
+      className="relative overflow-hidden border-y border-primary/10 bg-primary/[0.04] py-20 sm:py-28"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onFocusCapture={() => setIsPaused(true)}
@@ -137,7 +137,7 @@ export function Testimonials() {
                 key={item.name}
                 className="basis-[88%] pl-3 sm:basis-1/2 sm:pl-4 lg:basis-[45%]"
               >
-                <figure className="flex h-full min-w-0 flex-col rounded-2xl border border-border/60 bg-card p-5 sm:p-6">
+                <figure className="premium-card flex h-full min-w-0 flex-col p-5 sm:p-6">
                   <div
                     className="flex items-center gap-0.5"
                     aria-label={`${item.rating} out of 5 stars`}

@@ -13,6 +13,7 @@ export function Pricing() {
     <section id="pricing" className="py-20 sm:py-28">
       <div className="mx-auto max-w-5xl px-4 sm:px-6">
         <div className="text-center">
+          <p className="section-kicker">Pricing</p>
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
             Simple Pricing
           </h2>
@@ -28,10 +29,10 @@ export function Pricing() {
             return (
               <div
                 key={plan.name}
-                className={`relative flex min-h-full min-w-0 flex-col rounded-2xl border bg-card p-5 sm:p-6 ${
+                className={`premium-card relative flex min-h-full min-w-0 flex-col p-5 sm:p-6 ${
                   i === featuredIndex
-                    ? "border-primary shadow-lg shadow-primary/10"
-                    : "border-border/60"
+                    ? "border-primary shadow-xl shadow-primary/20 ring-1 ring-primary/30"
+                    : ""
                 }`}
               >
                 {i === featuredIndex && (

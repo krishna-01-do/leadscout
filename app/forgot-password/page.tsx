@@ -48,7 +48,7 @@ export default function ForgotPasswordPage() {
         {branding.name}
       </Link>
 
-      <div className="w-full max-w-sm rounded-2xl border border-border/60 bg-card p-5 shadow-lg sm:p-8">
+      <div className="premium-card w-full max-w-sm p-5 sm:p-8">
         <h1 className="text-xl font-semibold">Reset your password</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Enter your account email and we&apos;ll send you a secure reset link.
