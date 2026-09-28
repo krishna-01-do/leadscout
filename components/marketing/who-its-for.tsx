@@ -24,7 +24,7 @@ export function WhoItsFor() {
           {audiences.map((a) => (
             <div
               key={a.label}
-              className="flex items-center gap-3 rounded-xl border border-border/60 bg-card p-4"
+              className="premium-card flex items-center gap-3 p-4"
             >
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
                 <a.icon className="h-5 w-5" />

@@ -152,9 +152,10 @@ export default function AccountPage() {
   const periodLabel = formatPeriodEnd(stats?.periodEnd);
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
+    <div className="mx-auto max-w-6xl animate-fade-in-up space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Account</h1>
+        <p className="section-kicker">Account</p>
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Your workspace</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Manage your profile, usage, and monthly prospecting plan.
         </p>
@@ -167,7 +168,7 @@ export default function AccountPage() {
       )}
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-        <div className="rounded-2xl border border-border/60 bg-card p-5 sm:p-6">
+        <div className="premium-card p-5 sm:p-6">
           <h2 className="text-sm font-medium text-muted-foreground">Profile</h2>
           <div className="mt-5 space-y-4">
             <div className="flex items-center gap-3">
@@ -218,7 +219,7 @@ export default function AccountPage() {
           <ProfileEditor />
         </div>
 
-        <div className="rounded-2xl border border-border/60 bg-card p-5 sm:p-6">
+        <div className="premium-card p-5 sm:p-6">
           <h2 className="text-sm font-medium text-muted-foreground">Usage This Period</h2>
 
           {loading ? (
@@ -277,7 +278,7 @@ export default function AccountPage() {
       </div>
 
       {stats && (
-        <section className="overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/[0.07] via-card to-card p-4 sm:rounded-3xl sm:p-8">
+        <section className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/[0.07] via-card to-card p-4 sm:rounded-3xl sm:p-8">
           <div className="mx-auto max-w-3xl text-center">
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-background/80 px-3 py-1 text-xs font-medium text-primary">
               <Sparkles className="h-3.5 w-3.5" />

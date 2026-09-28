@@ -35,7 +35,7 @@ export function AppNavbar() {
   const initials = user?.email?.[0]?.toUpperCase() ?? "U";
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/80 backdrop-blur-md">
+    <header className="sticky top-0 z-40 w-full border-b border-white/60 bg-background/75 shadow-sm shadow-primary/5 backdrop-blur-xl">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-2 px-3 sm:px-6">
         <div className="flex min-w-0 items-center gap-2 sm:gap-6">
           <Link href="/" className="flex min-w-0 items-center gap-2 font-semibold">

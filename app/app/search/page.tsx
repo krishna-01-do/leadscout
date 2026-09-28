@@ -276,9 +276,10 @@ export default function SearchPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="animate-fade-in-up space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Find Prospects</h1>
+        <p className="section-kicker">Workspace</p>
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Find Prospects</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Describe the businesses you want to target. We'll find, research, and qualify them for you.
         </p>
@@ -293,7 +294,7 @@ export default function SearchPage() {
         </div>
       )}
 
-      <div className="rounded-2xl border border-border/60 bg-card p-4 sm:p-6">
+      <div className="premium-card p-4 sm:p-6">
         <SearchInput onSearch={handleSearch} loading={searchLoading} disabled={quotaExceeded} />
       </div>
 

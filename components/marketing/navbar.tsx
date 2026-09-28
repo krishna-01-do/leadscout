@@ -23,7 +23,7 @@ export function MarketingNavbar() {
   );
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/60 bg-background/80 backdrop-blur-md">
+    <header className="sticky top-0 z-50 w-full border-b border-white/60 bg-background/75 shadow-sm shadow-primary/5 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
         <Link href="/" className="flex min-w-0 items-center gap-2 text-base font-semibold sm:text-lg">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">

@@ -36,9 +36,12 @@ export function FAQ() {
   return (
     <section id="faq" className="py-20 sm:py-28">
       <div className="mx-auto max-w-3xl px-4 sm:px-6">
-        <h2 className="text-center text-3xl font-bold tracking-tight sm:text-4xl">
-          Frequently Asked Questions
-        </h2>
+        <div className="text-center">
+          <p className="section-kicker">Answers</p>
+          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+            Frequently Asked Questions
+          </h2>
+        </div>
 
         <div className="mt-10">
           <Accordion type="single" collapsible>

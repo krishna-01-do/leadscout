@@ -48,6 +48,7 @@ export function Features() {
     <section id="features" className="py-20 sm:py-28">
       <div className="mx-auto max-w-5xl px-4 sm:px-6">
         <div className="text-center">
+          <p className="section-kicker">Product</p>
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
             Core Features
           </h2>
@@ -60,7 +61,7 @@ export function Features() {
           {features.map((f) => (
             <div
               key={f.title}
-              className="group rounded-2xl border border-border/60 bg-card p-5 transition-all hover:border-primary/30 hover:shadow-md"
+              className="premium-card group p-5"
             >
               <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
                 <f.icon className="h-5 w-5" />

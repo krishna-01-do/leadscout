@@ -8,11 +8,12 @@ import { Badge } from "@/components/ui/badge";
 export function Hero() {
   return (
     <section className="relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent" />
-      <div className="absolute -top-40 left-1/2 h-96 w-[min(800px,130vw)] -translate-x-1/2 rounded-full bg-primary/10 blur-3xl" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_bottom,hsl(var(--primary)/0.08),transparent_42%)]" />
+      <div className="absolute -top-32 left-1/2 h-[28rem] w-[min(52rem,140vw)] -translate-x-1/2 rounded-full bg-primary/15 blur-3xl" />
+      <div className="absolute right-[8%] top-24 hidden h-40 w-40 rounded-full bg-sky-400/20 blur-3xl sm:block" />
 
-      <div className="relative mx-auto max-w-4xl px-4 pt-20 pb-16 text-center sm:px-6 sm:pt-28">
-        <Badge variant="secondary" className="mb-6 animate-fade-in-up">
+      <div className="relative mx-auto max-w-4xl px-4 pt-16 pb-16 text-center sm:px-6 sm:pt-24">
+        <Badge variant="secondary" className="mb-6 border border-primary/15 bg-background/80 px-3 py-1 shadow-sm backdrop-blur animate-fade-in-up">
           <span className="mr-1.5 flex h-1.5 w-1.5 rounded-full bg-primary" />
           AI-powered prospect discovery
         </Badge>
@@ -43,7 +44,7 @@ export function Hero() {
         </div>
 
         <div className="mx-auto mt-12 max-w-2xl animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
-          <div className="rounded-2xl border border-border/60 bg-card p-4 shadow-lg shadow-primary/5">
+          <div className="premium-card animate-float p-4 sm:p-5">
             <div className="flex items-start gap-2 rounded-lg border border-border/60 bg-muted/50 px-3 py-2.5 sm:items-center">
               <Search className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground sm:mt-0" />
               <span className="min-w-0 flex-1 text-left text-sm text-muted-foreground">

@@ -77,9 +77,10 @@ export default function HistoryPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="animate-fade-in-up space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Search History</h1>
+        <p className="section-kicker">Saved results</p>
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Search History</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Your past searches. Click any search to view its results without re-running the provider.
         </p>
@@ -93,7 +94,7 @@ export default function HistoryPage() {
       )}
 
       {history.length === 0 && !error ? (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-border/60 bg-card px-4 py-12 text-center sm:py-16">
+        <div className="premium-card flex flex-col items-center justify-center px-4 py-12 text-center sm:py-16">
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
             <History className="h-6 w-6" />
           </div>

@@ -28,6 +28,7 @@ export function HowItWorks() {
     <section id="how-it-works" className="py-20 sm:py-28">
       <div className="mx-auto max-w-5xl px-4 sm:px-6">
         <div className="text-center">
+          <p className="section-kicker">Workflow</p>
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
             How It Works
           </h2>
@@ -38,15 +39,17 @@ export function HowItWorks() {
 
         <div className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {steps.map((step, i) => (
-            <div key={step.title} className="relative text-center">
-              {i < steps.length - 1 && (
-                <div className="absolute top-8 left-1/2 hidden h-px w-full bg-border lg:block" />
-              )}
-              <div className="relative mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                <step.icon className="h-7 w-7" />
+            <div key={step.title} className="premium-card relative p-5 text-left sm:text-center">
+              <div className="mb-4 flex items-center justify-between sm:justify-center">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/25">
+                  <step.icon className="h-5 w-5" />
+                </div>
+                <span className="text-xs font-semibold tracking-[0.18em] text-primary/70 sm:absolute sm:right-4 sm:top-4">
+                  0{i + 1}
+                </span>
               </div>
-              <h3 className="mt-4 font-semibold">{step.title}</h3>
-              <p className="mt-2 text-sm text-muted-foreground">{step.description}</p>
+              <h3 className="font-semibold">{step.title}</h3>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">{step.description}</p>
             </div>
           ))}
         </div>
