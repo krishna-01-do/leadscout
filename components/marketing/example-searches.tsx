@@ -1,14 +1,14 @@
 "use client";
 
 const examples = [
-  "Gyms without websites",
-  "Dentists with 100+ reviews",
-  "Restaurants without online ordering",
-  "Salons with weak websites",
-  "Local businesses with no booking system",
-  "Clinics rated above 4.5",
-  "Cafes with no social media",
-  "Auto repair shops without websites",
+  "Appointment automation for clinics in Pune",
+  "Review follow-ups for restaurants in Mumbai",
+  "Booking software for gyms in Bengaluru",
+  "Accounting help for retail shops in Jaipur",
+  "Hiring software for coaching centres in Delhi",
+  "POS systems for cafes in Hyderabad",
+  "CRM setup for real-estate agencies in Chennai",
+  "WhatsApp support for salons in Ahmedabad",
 ];
 
 export function ExampleSearches() {
@@ -19,7 +19,7 @@ export function ExampleSearches() {
           Try searches like these
         </h2>
         <p className="mt-2 text-center text-sm text-muted-foreground">
-          Just type what you're looking for. Our AI handles the rest.
+          Describe the offer, or name the clients. Pick the area and we build the list.
         </p>
 
         <div className="mt-8 flex flex-wrap justify-center gap-2">

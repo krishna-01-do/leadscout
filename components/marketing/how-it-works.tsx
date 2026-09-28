@@ -4,17 +4,17 @@ const steps = [
   {
     icon: PenLine,
     title: "Describe",
-    description: "Tell us what businesses you're looking for in plain English. No filters or operators needed.",
+    description: "Describe your business, the service you sell, or the kind of client you want. Then choose the area.",
   },
   {
     icon: Search,
     title: "Search",
-    description: "We search across local business directories and Google Maps data to find matching prospects.",
+    description: "We turn that prompt into the local businesses most likely to buy, then search that area.",
   },
   {
     icon: CheckCircle2,
     title: "Qualify",
-    description: "Each prospect is scored and qualified based on your criteria — website status, rating, reviews, and more.",
+    description: "Each business is scored for fit, with rating, reviews, contact details, and why they match your offer.",
   },
   {
     icon: Download,

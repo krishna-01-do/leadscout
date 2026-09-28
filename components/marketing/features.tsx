@@ -4,12 +4,12 @@ const features = [
   {
     icon: MessageSquare,
     title: "Natural-language prospect search",
-    description: "Describe what you want in plain English. No complex filters or operators.",
+    description: "Describe your offer or the clients you want. One prompt is enough.",
   },
   {
     icon: MapPin,
     title: "Local business discovery",
-    description: "Search across Google Maps data for businesses in any city or region.",
+    description: "Search the city or area you choose and return the businesses most likely to buy.",
   },
   {
     icon: Filter,
@@ -38,8 +38,8 @@ const features = [
   },
   {
     icon: Globe,
-    title: "Website status detection",
-    description: "Identify businesses without websites — your strongest sales opportunities.",
+    title: "Client-fit reasons",
+    description: "See why each business belongs on the list, so you know who to contact first.",
   },
 ];
 

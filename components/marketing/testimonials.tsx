@@ -15,9 +15,9 @@ import { cn } from "@/lib/utils";
 const testimonials = [
   {
     quote:
-      "I used to spend evenings copying dental clinics from Google Maps into a sheet. With ApplyVelocity I typed one prompt for Hyderabad clinics without websites and had a scored list ready the same afternoon. Closed two website projects from that first batch.",
+      "I built a WhatsApp appointment bot and had no idea which clinics to call. One prompt for Hyderabad clinics gave me a scored list the same afternoon. Two of those clinics bought the automation.",
     name: "Ananya Reddy",
-    role: "Freelance web designer",
+    role: "Automation freelancer",
     location: "Hyderabad",
     rating: 5,
   },
@@ -55,7 +55,7 @@ const testimonials = [
   },
   {
     quote:
-      "Started on Basic for pet clinics in Coimbatore without a website. Got a solid scored list with phones, then moved to Pro once outreach was working. Beats rebuilding those lists manually every week.",
+      "I sell review follow-up automation to restaurants. Started on Basic with one Coimbatore search, exported the phones, and moved to Pro once the first few replies came in.",
     name: "Arjun Iyer",
     role: "Independent marketer",
     location: "Coimbatore",

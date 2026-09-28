@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error:
-            "We could not interpret that request. Check the required target business type and target location.",
+            "We could not tell which clients to find. Describe your offer or the client type, and choose an area.",
         },
         { status: 422 }
       );

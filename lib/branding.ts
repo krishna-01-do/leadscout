@@ -2,7 +2,7 @@ export const branding = {
   name: "ApplyVelocity",
   tagline: "Find your next customers with one prompt.",
   description:
-    "Describe the businesses you want to target. We find, research and qualify the best prospects for you.",
+    "Describe your business, your service, or the clients you want. We find the best local client list in the area you choose.",
   domain: "www.applyvelocity.com",
   email: "hello@applyvelocity.com",
 } as const;
