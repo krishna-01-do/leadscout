@@ -17,7 +17,8 @@ export default function ContactPage() {
     if (response.ok) { setState("sent"); event.currentTarget.reset(); return; }
     const body = await response.json().catch(() => ({})); setMessage(body.error ?? "Something went wrong."); setState("error");
   }
-  return <main className="mx-auto max-w-xl px-4 py-16 sm:px-6">
+  return <main className="marketing-stage mx-auto min-h-screen max-w-none px-4 py-16 sm:px-6">
+    <div className="mx-auto max-w-xl">
     <Link href="/" className="text-sm text-muted-foreground hover:text-foreground">← Back to {branding.name}</Link>
     <h1 className="mt-8 text-3xl font-bold tracking-tight">Contact us</h1>
     <p className="mt-3 text-muted-foreground">Have a question about ApplyVelocity or need help choosing a plan? Send us a message and we&apos;ll get back to you.</p>
@@ -28,9 +29,10 @@ export default function ContactPage() {
       <input name="email" required type="email" placeholder="you@example.com" className="h-11 w-full rounded-lg border bg-background px-3 text-sm" />
       <input name="subject" required minLength={3} placeholder="How can we help?" className="h-11 w-full rounded-lg border bg-background px-3 text-sm" />
       <textarea name="message" required minLength={10} rows={6} placeholder="Tell us more…" className="w-full rounded-lg border bg-background p-3 text-sm" />
-      {state === "sent" && <p className="text-sm text-emerald-600">Thanks — your message has been received.</p>}
+      {state === "sent" && <p className="text-sm text-emerald-300">Thanks — your message has been received.</p>}
       {state === "error" && <p className="text-sm text-destructive">{message}</p>}
       <Button type="submit" disabled={state === "sending"}><Send className="mr-2 h-4 w-4" />{state === "sending" ? "Sending…" : "Send message"}</Button>
     </form>
+    </div>
   </main>;
 }

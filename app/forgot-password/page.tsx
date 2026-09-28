@@ -40,7 +40,7 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center px-4 py-10">
+    <main className="marketing-stage flex min-h-screen flex-col items-center justify-center px-4 py-10">
       <Link href="/" className="mb-8 flex items-center gap-2 text-lg font-semibold">
         <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
           <Search className="h-4 w-4" />
@@ -56,7 +56,7 @@ export default function ForgotPasswordPage() {
 
         {sent ? (
           <div className="mt-6 space-y-5">
-            <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4 text-sm text-emerald-700">
+            <div className="rounded-xl border border-emerald-400/30 bg-emerald-400/10 p-4 text-sm text-emerald-200">
               If an account exists for <span className="break-all font-medium">{email}</span>, a reset link has been sent. Check your inbox and spam folder.
             </div>
             <Button variant="outline" className="w-full" asChild>
