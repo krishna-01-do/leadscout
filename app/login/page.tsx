@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { branding } from "@/lib/branding";
-import { isAuthInactive, readLastActivity, recordAuthActivity } from "@/lib/auth/inactivity";
+import { isAuthInactive, isRecentSignIn, readLastActivity, recordAuthActivity } from "@/lib/auth/inactivity";
 import { hasVerifiedEmail } from "@/lib/auth/verified";
 import { GoogleAuthButton } from "@/components/auth/google-auth-button";
 
@@ -23,7 +23,9 @@ export default function LoginPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const authError = params.get("error");
-    if (authError === "auth_callback") {
+    if (params.get("reason") === "inactive") {
+      setError("You were signed out after a period of inactivity. Sign in again.");
+    } else if (authError === "auth_callback") {
       setError("Could not complete sign-in. Try again or confirm your email first.");
     } else if (authError === "confirm_email") {
       setError("Confirm your email before accessing your account.");
@@ -33,6 +35,11 @@ export default function LoginPage() {
     const supabase = createBrowserClient();
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session?.user || !hasVerifiedEmail(session.user)) return;
+      if (isRecentSignIn(session.user.last_sign_in_at)) {
+        recordAuthActivity(session.user.id);
+        router.push("/app/account");
+        return;
+      }
       const lastActivity = readLastActivity(session.user.id);
       if (lastActivity && isAuthInactive(lastActivity)) {
         void supabase.auth.signOut();

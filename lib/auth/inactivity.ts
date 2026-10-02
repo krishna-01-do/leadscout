@@ -27,6 +27,14 @@ export function isAuthInactive(lastActivity: number, timestamp = Date.now()) {
   return timestamp - lastActivity >= AUTH_INACTIVITY_MS;
 }
 
+const RECENT_SIGN_IN_MS = 2 * 60 * 1000;
+
+export function isRecentSignIn(lastSignInAt: string | null | undefined, timestamp = Date.now()) {
+  if (!lastSignInAt) return false;
+  const signedInAt = Date.parse(lastSignInAt);
+  return Number.isFinite(signedInAt) && timestamp - signedInAt >= 0 && timestamp - signedInAt < RECENT_SIGN_IN_MS;
+}
+
 export function authActivityStorageKey(userId: string) {
   return key(userId);
 }

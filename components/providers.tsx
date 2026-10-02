@@ -8,6 +8,7 @@ import {
   AUTH_INACTIVITY_MS,
   authActivityStorageKey,
   isAuthInactive,
+  isRecentSignIn,
   readLastActivity,
   recordAuthActivity,
 } from "@/lib/auth/inactivity";
@@ -76,11 +77,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const userId = session?.user.id;
     if (!userId || pathname === "/reset-password") return;
 
-    let lastActivity = readLastActivity(userId) ?? Date.now();
+    const freshSignIn = isRecentSignIn(session?.user.last_sign_in_at);
+    let lastActivity = freshSignIn ? Date.now() : (readLastActivity(userId) ?? Date.now());
     let timer: number | undefined;
     let signingOut = false;
     let lastStoredAt = lastActivity;
-    if (!readLastActivity(userId)) recordAuthActivity(userId, lastActivity);
+    if (freshSignIn || !readLastActivity(userId)) recordAuthActivity(userId, lastActivity);
 
     const expireIfInactive = async () => {
       if (signingOut) return;
