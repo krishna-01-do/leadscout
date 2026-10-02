@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { branding } from "@/lib/branding";
 import { isAuthInactive, readLastActivity, recordAuthActivity } from "@/lib/auth/inactivity";
+import { hasVerifiedEmail } from "@/lib/auth/verified";
 import { GoogleAuthButton } from "@/components/auth/google-auth-button";
 
 export default function LoginPage() {
@@ -31,7 +32,7 @@ export default function LoginPage() {
     if (!isSupabaseBrowserConfigured()) return;
     const supabase = createBrowserClient();
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session?.user.email_confirmed_at) return;
+      if (!session?.user || !hasVerifiedEmail(session.user)) return;
       const lastActivity = readLastActivity(session.user.id);
       if (lastActivity && isAuthInactive(lastActivity)) {
         void supabase.auth.signOut();
@@ -68,7 +69,7 @@ export default function LoginPage() {
       return;
     }
 
-    if (data.user && !data.user.email_confirmed_at) {
+    if (data.user && !hasVerifiedEmail(data.user)) {
       await supabase.auth.signOut();
       setError("Confirm your email before signing in. Check your inbox for the verification link.");
       setLoading(false);

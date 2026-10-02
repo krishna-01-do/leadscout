@@ -10,8 +10,9 @@ function safeRedirectPath(next: string | null) {
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
-  const next = safeRedirectPath(url.searchParams.get("next"));
-  const origin = process.env.NEXT_PUBLIC_APP_URL || url.origin;
+  const cookieStore = await cookies();
+  const next = safeRedirectPath(url.searchParams.get("next") ?? cookieStore.get("av_auth_next")?.value ?? null);
+  const origin = url.origin;
 
   if (!code) {
     return NextResponse.redirect(new URL("/login?error=auth_callback", origin));
@@ -23,12 +24,13 @@ export async function GET(request: Request) {
     return NextResponse.redirect(new URL("/login?error=auth_config", origin));
   }
 
-  const cookieStore = await cookies();
+  const response = NextResponse.redirect(new URL(next, origin));
+  response.cookies.set("av_auth_next", "", { path: "/", maxAge: 0 });
   const supabase = createServerClient(supabaseUrl, anonKey, {
     cookies: {
       getAll: () => cookieStore.getAll(),
       setAll(items) {
-        items.forEach(({ name, value, options }) => cookieStore.set(name, value, options));
+        items.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
       },
     },
   });
@@ -38,5 +40,5 @@ export async function GET(request: Request) {
     return NextResponse.redirect(new URL("/login?error=auth_callback", origin));
   }
 
-  return NextResponse.redirect(new URL(next, origin));
+  return response;
 }

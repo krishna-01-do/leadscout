@@ -96,8 +96,9 @@ export function evidenceFromResult(result: BraveWebResult): ProspectEvidence {
 export function webOnlyBusiness(result: BraveWebResult, country: string | null): NormalizedBusiness | null {
   const domain = normalizedDomain(result.url);
   if (!domain || ignoredDomains.has(domain) || ignoredDomains.has(domain.split(".").slice(-2).join("."))) return null;
-  const name = result.title.split(/[|\-–]/)[0]?.trim().slice(0, 120) || "";
-  if (!name || name.split(/\s+/).length > 6) return null;
+  const headline = result.title.split(/[|\-–:]/)[0]?.trim() ?? "";
+  const name = headline.replace(/\b(announces|announced|hiring|is hiring|opens|opening|launches).*/i, "").trim().slice(0, 120);
+  if (!name || name.split(/\s+/).length > 8) return null;
   return {
     id: "",
     provider: "brave",

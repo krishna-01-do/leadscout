@@ -14,13 +14,14 @@ export const searchStrategySchema = z.object({
     businessTypes: z.array(z.string().trim().min(2).max(80)).min(1).max(6),
     reason: z.string().trim().min(2).max(240),
   })).min(1).max(6),
-  mapsQueries: z.array(queryText).min(1).max(8),
+  mapsQueries: z.array(queryText).max(8).default([]),
   webIntentQueries: z.array(queryText).max(8).default([]),
   painSignals: z.array(queryText).max(8).default([]),
   positiveSignals: z.array(queryText).max(8).default([]),
   negativeSignals: z.array(queryText).max(8).default([]),
   decisionMakerRoles: z.array(z.string().trim().min(2).max(80)).max(8).default([]),
   searchExplanation: z.string().trim().max(400).default(""),
+  needsMaps: z.boolean().default(false),
 });
 
 export type SearchStrategy = z.infer<typeof searchStrategySchema>;

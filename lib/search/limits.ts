@@ -14,5 +14,6 @@ export const scoreWeights = {
 } as const;
 
 export function braveProspectingEnabled() {
-  return process.env.ENABLE_BRAVE_PROSPECTING === "true";
+  if (process.env.ENABLE_BRAVE_PROSPECTING === "false") return false;
+  return process.env.ENABLE_BRAVE_PROSPECTING === "true" || Boolean(process.env.BRAVE_SEARCH_API_KEY);
 }

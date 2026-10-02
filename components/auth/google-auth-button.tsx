@@ -6,7 +6,8 @@ import { createBrowserClient, isSupabaseBrowserConfigured } from "@/lib/supabase
 import { Button } from "@/components/ui/button";
 
 function authCallbackUrl() {
-  return `${window.location.origin}/auth/callback?next=${encodeURIComponent("/app/account")}`;
+  document.cookie = "av_auth_next=/app/account; Path=/; Max-Age=600; SameSite=Lax";
+  return `${window.location.origin}/auth/callback`;
 }
 
 export function GoogleAuthButton({ mode }: { mode: "signin" | "signup" }) {

@@ -3,7 +3,7 @@ vi.mock("server-only", () => ({}));
 import { dedupeQueries } from "@/lib/search/queries";
 import { buildProspects } from "@/lib/search/pipeline";
 import { matchWebResult, usableWebResults } from "@/lib/search/prospects";
-import { fallbackStrategy } from "@/lib/search/planner";
+import { fallbackStrategy, strategyLocation } from "@/lib/search/planner";
 import { searchStrategySchema } from "@/schemas/prospecting";
 import type { NormalizedBusiness } from "@/types";
 
@@ -57,8 +57,17 @@ describe("prospecting queries", () => {
 
   it("builds a fallback plan without calling a model", () => {
     const plan = fallbackStrategy("I automate inventory for businesses", "Houston");
+    expect(plan.needsMaps).toBe(true);
     expect(plan.mapsQueries.length).toBeGreaterThan(0);
     expect(searchStrategySchema.safeParse(plan).success).toBe(true);
+  });
+
+  it("keeps web search when no location is given and uses an explicit location override", () => {
+    const plan = fallbackStrategy("I automate inventory for businesses", "");
+    expect(plan.needsMaps).toBe(false);
+    expect(plan.webIntentQueries.length).toBeGreaterThan(0);
+    expect(strategyLocation(plan, "")).toBe("");
+    expect(strategyLocation(plan, "London")).toBe("London");
   });
 });
 

@@ -281,7 +281,7 @@ export default function SearchPage() {
         <p className="section-kicker">Workspace</p>
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Find Prospects</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Describe your offer or the clients you want. We find likely buyers and public signs they may need it.
+          Describe what you sell. We find the clients who are likely to need it.
         </p>
       </div>
 

@@ -7,7 +7,7 @@ import { MockBusinessSearchProvider } from "@/lib/providers/mock-provider";
 import { deduplicateBusinesses } from "@/lib/scoring/dedup";
 import { qualifyBusiness } from "@/lib/scoring/engine";
 import { braveProspectingEnabled } from "@/lib/search/limits";
-import { buildProspects } from "@/lib/search/pipeline";
+import { buildProspects, type BuiltProspect } from "@/lib/search/pipeline";
 import { usableWebResults } from "@/lib/search/prospects";
 import { searchStrategySchema, qualificationSchema, type ProspectQualification } from "@/schemas/prospecting";
 import type { BraveWebResult, SearchStrategy } from "@/schemas/prospecting";
@@ -255,14 +255,7 @@ export async function processProviderRun(runId: string): Promise<void> {
 
     await updateSearchStatus(searchId, "SCORING");
     const qualified = prospects
-      ? prospects.map((prospect, index) => ({
-          ...prospect.business,
-          matchScore: prospect.qualification.total,
-          qualified: prospect.qualification.icpFit >= 20,
-          qualificationReason: prospect.qualification.reason,
-          opportunityFlags: [] as QualifiedResult["opportunityFlags"],
-          rank: index + 1,
-        }))
+      ? scoreProspects(prospects)
       : businesses
           .map((business, index) => qualifyBusiness(business, query, index + 1))
           .sort((a, b) => b.matchScore - a.matchScore)
@@ -389,6 +382,57 @@ async function updateSearchStatus(
   if (resultCount !== undefined) updates.result_count = resultCount;
   const { error } = await createSupabaseAdmin().from("searches").update(updates).eq("id", searchId);
   if (error) throw new Error("Could not update search status");
+}
+
+function scoreProspects(prospects: BuiltProspect[]): QualifiedResult[] {
+  return prospects.map((prospect, index) => ({
+    ...prospect.business,
+    matchScore: prospect.qualification.total,
+    qualified: prospect.qualification.icpFit >= 20,
+    qualificationReason: prospect.qualification.reason,
+    opportunityFlags: [],
+    rank: index + 1,
+  }));
+}
+
+export async function completeBraveSearch(
+  searchId: string,
+  strategy: SearchStrategy,
+  webResults: BraveWebResult[]
+) {
+  const database = createSupabaseAdmin();
+  const { data: search } = await database.from("searches").select("*").eq("id", searchId).maybeSingle();
+  if (!search || ["COMPLETED", "FAILED"].includes(search.status)) return false;
+  const query = businessSearchQuerySchema.parse(search.parsed_query);
+  const prospects = buildProspects([], usableWebResults(webResults), strategy, query.location)
+    .slice(0, search.requested_result_limit);
+  await saveProspecting(
+    searchId,
+    strategy,
+    webResults,
+    prospects.length ? null : "No public clients were found for this offer."
+  );
+  if (!prospects.length) {
+    await failSearchAndRefund(searchId, "NO_RESULTS", "No matching clients were found for that offer.");
+    return false;
+  }
+  const qualified = scoreProspects(prospects);
+  const qualifications = new Map(prospects.map((prospect) => [
+    `${prospect.business.provider}:${prospect.business.providerBusinessId}`,
+    prospect.qualification,
+  ]));
+  await updateSearchStatus(searchId, "SCORING");
+  await persistResults(searchId, prospects.map((prospect) => prospect.business), qualified, qualifications);
+  await recordLeadUsage(search.user_id, searchId, qualified.length);
+  await updateSearchStatus(searchId, "COMPLETED", qualified.length);
+  console.info("ApplyVelocity search pipeline", {
+    searchId,
+    mapsResults: 0,
+    webResults: webResults.length,
+    prospects: qualified.length,
+    brave: true,
+  });
+  return true;
 }
 
 export async function saveProspecting(

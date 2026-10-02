@@ -47,13 +47,13 @@ describe("businessSearchQuerySchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("should reject empty location", () => {
+  it("should allow an empty location before a market is inferred", () => {
     const input = {
       businessCategory: "gym",
       location: "",
     };
     const result = businessSearchQuerySchema.safeParse(input);
-    expect(result.success).toBe(false);
+    expect(result.success).toBe(true);
   });
 
   it("should reject invalid website condition", () => {
@@ -149,7 +149,7 @@ describe("createSearchRequestSchema", () => {
     expect(result.success).toBe(true);
   });
 
-  it("should require a selected area", () => {
+  it("should allow a prompt without a client type or location", () => {
     const result = createSearchRequestSchema.safeParse({
       prompt: "I build appointment automation for clinics",
       idempotencyKey: "550e8400-e29b-41d4-a716-446655440000",
@@ -166,6 +166,6 @@ describe("createSearchRequestSchema", () => {
         resultLimit: "10",
       },
     });
-    expect(result.success).toBe(false);
+    expect(result.success).toBe(true);
   });
 });
