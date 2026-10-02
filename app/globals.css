@@ -85,10 +85,12 @@
     border-color: hsl(var(--border) / 0.8);
     box-shadow: 0 12px 40px -24px hsl(var(--primary) / 0.55);
   }
-  .premium-card:hover {
-    transform: translateY(-4px);
-    border-color: hsl(var(--primary) / 0.28);
-    box-shadow: 0 22px 50px -24px hsl(var(--primary) / 0.7);
+  @media (hover: hover) and (pointer: fine) {
+    .premium-card:hover {
+      transform: translateY(-4px);
+      border-color: hsl(var(--primary) / 0.28);
+      box-shadow: 0 22px 50px -24px hsl(var(--primary) / 0.7);
+    }
   }
   .section-kicker {
     @apply mb-3 inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold uppercase text-primary;

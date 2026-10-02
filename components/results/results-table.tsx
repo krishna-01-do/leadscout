@@ -159,23 +159,23 @@ export function ResultsTable({ results, onExport, exporting, selectedIds, onSele
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="min-w-0 space-y-4">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
         <div className="flex min-w-0 flex-1 items-center gap-2">
           <div className="relative min-w-0 flex-1 sm:max-w-xs">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="Search within results..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 h-9"
+              className="h-11 pl-9 text-base sm:h-9 sm:text-sm"
             />
           </div>
           <Button
             variant="outline"
             size="sm"
             onClick={() => setShowFilters(!showFilters)}
-            className="h-9"
+            className="h-11 shrink-0 px-3 sm:h-9"
           >
             <Filter className="h-3.5 w-3.5" />
             Filters
@@ -193,30 +193,30 @@ export function ResultsTable({ results, onExport, exporting, selectedIds, onSele
             size="sm"
             onClick={() => onExport(true)}
             disabled={selected.size === 0 || exporting}
-            className="h-auto min-h-9 whitespace-normal px-2 sm:h-9 sm:px-3"
+            className="h-11 whitespace-nowrap px-2 text-xs sm:h-9 sm:px-3 sm:text-sm"
           >
             <Download className="h-3.5 w-3.5" />
-            Export Selected
+            Export selected
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={() => onExport(false)}
             disabled={exporting}
-            className="h-auto min-h-9 whitespace-normal px-2 sm:h-9 sm:px-3"
+            className="h-11 whitespace-nowrap px-2 text-xs sm:h-9 sm:px-3 sm:text-sm"
           >
             <Download className="h-3.5 w-3.5" />
-            Export All
+            Export all
           </Button>
         </div>
       </div>
 
       {showFilters && (
-        <div className="grid gap-3 rounded-lg border border-border/60 bg-card p-3 sm:flex sm:flex-wrap sm:items-center">
-          <div className="flex min-w-0 items-center justify-between gap-2 sm:justify-start">
-            <span className="text-xs text-muted-foreground">Website:</span>
+        <div className="grid grid-cols-1 gap-3 rounded-lg border border-border/60 bg-card p-3 sm:flex sm:flex-wrap sm:items-center">
+          <div className="flex min-w-0 flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-start">
+            <span className="text-xs text-muted-foreground">Website</span>
             <Select value={filterWebsite} onValueChange={setFilterWebsite}>
-              <SelectTrigger className="h-8 w-28">
+              <SelectTrigger className="h-11 w-full text-base sm:h-8 sm:w-28 sm:text-sm">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -227,10 +227,10 @@ export function ResultsTable({ results, onExport, exporting, selectedIds, onSele
             </Select>
           </div>
 
-          <div className="flex min-w-0 items-center justify-between gap-2 sm:justify-start">
-            <span className="text-xs text-muted-foreground">Min Score:</span>
+          <div className="flex min-w-0 flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-start">
+            <span className="text-xs text-muted-foreground">Min score</span>
             <Select value={filterMinScore} onValueChange={setFilterMinScore}>
-              <SelectTrigger className="h-8 w-24">
+              <SelectTrigger className="h-11 w-full text-base sm:h-8 sm:w-24 sm:text-sm">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -242,10 +242,10 @@ export function ResultsTable({ results, onExport, exporting, selectedIds, onSele
             </Select>
           </div>
 
-          <div className="flex min-w-0 items-center justify-between gap-2 sm:justify-start">
-            <span className="text-xs text-muted-foreground">Signal:</span>
+          <div className="flex min-w-0 flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-start">
+            <span className="text-xs text-muted-foreground">Signal</span>
             <Select value={filterSignal} onValueChange={setFilterSignal}>
-              <SelectTrigger className="h-8 w-36">
+              <SelectTrigger className="h-11 w-full text-base sm:h-8 sm:w-36 sm:text-sm">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -256,10 +256,10 @@ export function ResultsTable({ results, onExport, exporting, selectedIds, onSele
             </Select>
           </div>
 
-          <div className="flex min-w-0 items-center justify-between gap-2 sm:justify-start">
-            <span className="text-xs text-muted-foreground">Flag:</span>
+          <div className="flex min-w-0 flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-start">
+            <span className="text-xs text-muted-foreground">Flag</span>
             <Select value={filterFlag} onValueChange={setFilterFlag}>
-              <SelectTrigger className="h-8 w-36">
+              <SelectTrigger className="h-11 w-full text-base sm:h-8 sm:w-36 sm:text-sm">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -445,11 +445,11 @@ export function ResultsTable({ results, onExport, exporting, selectedIds, onSele
           return (
             <article
               key={row.id}
-              className="rounded-xl border border-border/60 bg-card p-4"
+              className="min-w-0 overflow-hidden rounded-xl border border-border/60 bg-card p-3.5"
               onClick={() => setDetailRow(row)}
             >
               <div className="flex items-start gap-3">
-                <div onClick={(event) => event.stopPropagation()}>
+                <div className="pt-0.5" onClick={(event) => event.stopPropagation()}>
                   <Checkbox
                     checked={selected.has(row.id)}
                     onCheckedChange={() => toggleSelect(row.id)}
@@ -457,14 +457,22 @@ export function ResultsTable({ results, onExport, exporting, selectedIds, onSele
                   />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-start justify-between gap-3">
-                    <h3 className="font-medium leading-snug">{row.business.name}</h3>
-                    <span className={`shrink-0 text-sm font-semibold ${scoreLabel.color}`}>{row.matchScore}%</span>
+                  <div className="flex items-start gap-2">
+                    <h3 className="min-w-0 flex-1 break-words text-[15px] font-medium leading-snug [overflow-wrap:break-word]">
+                      {row.business.name}
+                    </h3>
+                    <span className={`shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs font-semibold ${scoreLabel.color}`}>
+                      {row.matchScore}%
+                    </span>
                   </div>
-                  <p className="mt-1 text-xs text-muted-foreground">{row.business.category ?? "Uncategorized"}</p>
+                  <p className="mt-1 break-words text-xs text-muted-foreground [overflow-wrap:break-word]">
+                    {row.business.category ?? "Uncategorized"}
+                  </p>
                   <p className="mt-2 flex items-start gap-1.5 text-xs text-muted-foreground">
                     <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                    <span>{row.business.city ?? row.business.address ?? "Location unavailable"}</span>
+                    <span className="min-w-0 break-words [overflow-wrap:break-word]">
+                      {row.business.city ?? row.business.address ?? "Location unavailable"}
+                    </span>
                   </p>
                   <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
                     {row.business.rating !== null && (

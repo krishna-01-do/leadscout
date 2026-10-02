@@ -77,7 +77,7 @@ export function SearchInput({ onSearch, loading, disabled }: SearchInputProps) {
           onChange={(e) => setPrompt(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="What do you sell, and who do you want to sell it to?"
-          className="min-h-[100px] resize-none border-2 pr-12 text-base"
+          className="max-h-48 min-h-[120px] resize-none overflow-y-auto border-2 pr-12 text-base leading-relaxed [overflow-wrap:break-word]"
           disabled={disabled}
         />
         <Search className="absolute right-4 top-4 h-5 w-5 text-muted-foreground" />
@@ -89,7 +89,7 @@ export function SearchInput({ onSearch, loading, disabled }: SearchInputProps) {
             key={chip}
             onClick={() => setPrompt(chip)}
             disabled={disabled}
-            className="rounded-full border border-border/60 bg-card px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground disabled:opacity-50"
+            className="max-w-full rounded-full border border-border/60 bg-card px-3 py-1.5 text-left text-xs leading-snug text-muted-foreground transition-colors [overflow-wrap:normal] hover:border-primary/40 hover:text-foreground disabled:opacity-50"
           >
             {chip}
           </button>
@@ -127,8 +127,8 @@ export function SearchInput({ onSearch, loading, disabled }: SearchInputProps) {
       </div>
 
       {showAdvanced && (
-        <div className="rounded-xl border border-border/60 bg-card p-4">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="rounded-xl border border-border/60 bg-card p-3 sm:p-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div className="space-y-1.5">
               <Label htmlFor="target-business-type" className="text-xs">Client type</Label>
               <Input
@@ -136,7 +136,7 @@ export function SearchInput({ onSearch, loading, disabled }: SearchInputProps) {
                 value={filters.businessCategory}
                 onChange={(e) => setFilters({ ...filters, businessCategory: e.target.value })}
                 placeholder="Optional, e.g., dental clinics"
-                className="h-9"
+                className="h-11 text-base sm:h-9 sm:text-sm"
                 disabled={disabled}
               />
             </div>
@@ -148,7 +148,7 @@ export function SearchInput({ onSearch, loading, disabled }: SearchInputProps) {
                 value={filters.location}
                 onChange={(e) => setFilters({ ...filters, location: e.target.value })}
                 placeholder="Optional, e.g., Hyderabad"
-                className="h-9"
+                className="h-11 text-base sm:h-9 sm:text-sm"
                 disabled={disabled}
               />
             </div>
@@ -159,7 +159,7 @@ export function SearchInput({ onSearch, loading, disabled }: SearchInputProps) {
                 value={filters.websiteCondition}
                 onValueChange={(v) => setFilters({ ...filters, websiteCondition: v })}
               >
-                <SelectTrigger className="h-9">
+                <SelectTrigger className="h-11 text-base sm:h-9 sm:text-sm">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -181,7 +181,7 @@ export function SearchInput({ onSearch, loading, disabled }: SearchInputProps) {
                 value={filters.minRating}
                 onChange={(e) => setFilters({ ...filters, minRating: e.target.value })}
                 placeholder="e.g., 4.0"
-                className="h-9"
+                className="h-11 text-base sm:h-9 sm:text-sm"
               />
             </div>
 
@@ -193,7 +193,7 @@ export function SearchInput({ onSearch, loading, disabled }: SearchInputProps) {
                 value={filters.minReviews}
                 onChange={(e) => setFilters({ ...filters, minReviews: e.target.value })}
                 placeholder="e.g., 50"
-                className="h-9"
+                className="h-11 text-base sm:h-9 sm:text-sm"
               />
             </div>
 
@@ -205,24 +205,24 @@ export function SearchInput({ onSearch, loading, disabled }: SearchInputProps) {
                 max="50"
                 value={filters.resultLimit}
                 onChange={(e) => setFilters({ ...filters, resultLimit: e.target.value })}
-                className="h-9"
+                className="h-11 text-base sm:h-9 sm:text-sm"
               />
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex min-h-11 items-center justify-between gap-3 rounded-lg border border-border/60 px-3 sm:justify-start sm:border-0 sm:px-0">
+              <Label className="text-sm sm:text-xs">Phone required</Label>
               <Switch
                 checked={filters.phoneRequired}
                 onCheckedChange={(v) => setFilters({ ...filters, phoneRequired: v })}
               />
-              <Label className="text-xs">Phone required</Label>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex min-h-11 items-center justify-between gap-3 rounded-lg border border-border/60 px-3 sm:justify-start sm:border-0 sm:px-0">
+              <Label className="text-sm sm:text-xs">Email required</Label>
               <Switch
                 checked={filters.emailRequired}
                 onCheckedChange={(v) => setFilters({ ...filters, emailRequired: v })}
               />
-              <Label className="text-xs">Email required</Label>
             </div>
           </div>
         </div>
