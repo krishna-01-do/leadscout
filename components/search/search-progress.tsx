@@ -14,27 +14,52 @@ export function SearchProgress({ currentStatus }: { currentStatus: SearchStatus 
   const failed = currentStatus === "FAILED";
 
   return (
-    <div className="flex flex-col items-center justify-center py-20">
-      <div className="flex items-center gap-3 mb-8">
+    <div className="px-4 py-6 sm:px-6 sm:py-16">
+      <div className="mb-5 flex items-center gap-3 sm:mb-8 sm:justify-center">
         {failed ? (
-          <Loader2 className="h-5 w-5 text-destructive" />
+          <Loader2 className="h-5 w-5 shrink-0 text-destructive" />
         ) : (
-          <Loader2 className="h-5 w-5 animate-spin text-primary" />
+          <Loader2 className="h-5 w-5 shrink-0 animate-spin text-primary" />
         )}
-        <span className="text-lg font-medium">
+        <span className="min-w-0 text-base font-medium leading-snug sm:text-lg">
           {failed ? "Search failed" : stages[currentIndex]?.label ?? "Processing..."}
         </span>
       </div>
 
-      <div className="flex items-center gap-2">
+      <ol className="mx-auto w-full max-w-md space-y-2 md:hidden">
         {stages.map((stage, i) => {
           const isDone = !failed && (i < currentIndex || currentStatus === "COMPLETED");
           const isCurrent = !failed && i === currentIndex && currentStatus !== "COMPLETED";
 
           return (
-            <div key={stage.status} className="flex items-center">
+            <li
+              key={stage.status}
+              className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm ${
+                isDone
+                  ? "bg-primary/10 text-primary"
+                  : isCurrent
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground"
+              }`}
+            >
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center">
+                {isDone ? "✓" : isCurrent ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : i + 1}
+              </span>
+              <span className="min-w-0 flex-1 leading-snug [overflow-wrap:normal]">{stage.label}</span>
+            </li>
+          );
+        })}
+      </ol>
+
+      <div className="hidden flex-wrap items-center justify-center gap-y-2 md:flex">
+        {stages.map((stage, i) => {
+          const isDone = !failed && (i < currentIndex || currentStatus === "COMPLETED");
+          const isCurrent = !failed && i === currentIndex && currentStatus !== "COMPLETED";
+
+          return (
+            <div key={stage.status} className="flex shrink-0 items-center">
               <div
-                className={`flex items-center gap-2 rounded-full px-3 py-1.5 text-xs transition-colors ${
+                className={`flex items-center gap-2 whitespace-nowrap rounded-full px-3 py-1.5 text-xs transition-colors [overflow-wrap:normal] ${
                   isDone
                     ? "bg-primary/10 text-primary"
                     : isCurrent

@@ -276,7 +276,7 @@ export default function SearchPage() {
   }
 
   return (
-    <div className="animate-fade-in-up space-y-6">
+    <div className="animate-fade-in-up min-w-0 space-y-6 overflow-x-clip">
       <div>
         <p className="section-kicker">Workspace</p>
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Find Prospects</h1>
@@ -324,7 +324,7 @@ export default function SearchPage() {
       )}
 
       {searchLoading && searchStatus && !quotaExceeded && (
-        <div className="rounded-2xl border border-border/60 bg-card">
+        <div className="min-w-0 overflow-hidden rounded-2xl border border-border/60 bg-card">
           <SearchProgress currentStatus={searchStatus} />
         </div>
       )}
