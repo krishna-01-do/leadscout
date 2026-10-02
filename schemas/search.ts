@@ -9,7 +9,7 @@ export const websiteConditionSchema = z.enum([
 
 export const businessSearchQuerySchema = z.object({
   businessCategory: z.string().trim().min(2, "Business category is required").max(100),
-  location: z.string().trim().min(2, "Location is required").max(160),
+  location: z.string().trim().max(160).default(""),
   city: z.string().trim().max(100).nullable().default(null),
   state: z.string().trim().max(100).nullable().default(null),
   country: z.string().trim().max(100).nullable().default(null),
@@ -21,6 +21,7 @@ export const businessSearchQuerySchema = z.object({
   phoneRequired: z.boolean().default(false),
   emailRequired: z.boolean().default(false),
   keywords: z.array(z.string().trim().min(1).max(60)).max(10).default([]),
+  mapsQueries: z.array(z.string().trim().min(2).max(120)).max(8).default([]),
   resultLimit: z.number().int().min(1).max(50).default(25),
 }).superRefine((query, context) => {
   if (query.minRating !== null && query.maxRating !== null && query.minRating > query.maxRating) {
@@ -38,7 +39,7 @@ export const createSearchRequestSchema = z.object({
   idempotencyKey: z.string().uuid(),
   filters: z.object({
     businessCategory: z.string().trim().max(100),
-    location: z.string().trim().min(2, "Target location is required").max(160),
+    location: z.string().trim().max(160),
     minRating: z.string().max(16),
     maxRating: z.string().max(16),
     minReviews: z.string().max(16),

@@ -1,3 +1,5 @@
+import type { ProspectQualification } from "@/schemas/prospecting";
+
 export type WebsiteCondition = "ANY" | "MISSING" | "PRESENT" | "MISSING_OR_POOR";
 
 export type SearchStatus =
@@ -19,7 +21,7 @@ export type OpportunityFlag =
   | "NO_ONLINE_BOOKING"
   | "NO_ONLINE_ORDERING";
 
-export type ProviderName = "apify" | "mock" | "brightdata";
+export type ProviderName = "apify" | "mock" | "brightdata" | "brave";
 
 export interface BusinessSearchQuery {
   businessCategory: string;
@@ -35,6 +37,7 @@ export interface BusinessSearchQuery {
   phoneRequired: boolean;
   emailRequired: boolean;
   keywords: string[];
+  mapsQueries?: string[];
   resultLimit: number;
 }
 
@@ -76,6 +79,7 @@ export interface SearchResultRow {
   matchScore: number;
   qualified: boolean;
   qualificationReason: string;
+  qualification: ProspectQualification | null;
   opportunityFlags: OpportunityFlag[];
   rank: number;
   business: NormalizedBusiness;
@@ -92,6 +96,7 @@ export interface SearchRecord {
   resultCount: number;
   errorCode: string | null;
   errorMessage: string | null;
+  prospectingError: string | null;
   createdAt: string;
   startedAt: string | null;
   completedAt: string | null;

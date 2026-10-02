@@ -57,12 +57,19 @@ export class ApifyBusinessSearchProvider implements BusinessSearchProvider {
       url.searchParams.set("webhooks", Buffer.from(JSON.stringify(webhooks)).toString("base64"));
     }
 
+    const location = query.location.trim();
+    const mapQueries = query.mapsQueries?.length ? query.mapsQueries : [query.businessCategory];
+    const searchStrings = mapQueries.map((item) => {
+      const queryText = item.trim();
+      if (!location || queryText.toLowerCase().includes(location.toLowerCase())) return queryText;
+      return `${queryText} in ${location}`;
+    });
     const response = await fetch(url, {
       method: "POST",
       headers: { ...authorization(token), "Content-Type": "application/json" },
       body: JSON.stringify({
-        searchStringsArray: [`${query.businessCategory} in ${query.location}`],
-        maxCrawledPlacesPerSearch: query.resultLimit,
+        searchStringsArray: searchStrings,
+        maxCrawledPlacesPerSearch: Math.max(5, Math.ceil(query.resultLimit / searchStrings.length)),
         language: "en",
       }),
       signal: AbortSignal.timeout(15_000),

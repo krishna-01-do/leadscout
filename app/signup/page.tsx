@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { branding } from "@/lib/branding";
 import { recordAuthActivity } from "@/lib/auth/inactivity";
+import { hasVerifiedEmail } from "@/lib/auth/verified";
 import { GoogleAuthButton } from "@/components/auth/google-auth-button";
 
 function emailRedirectTo() {
@@ -29,7 +30,7 @@ export default function SignupPage() {
     if (!isSupabaseBrowserConfigured()) return;
     const supabase = createBrowserClient();
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user.email_confirmed_at) router.push("/app/account");
+      if (session?.user && hasVerifiedEmail(session.user)) router.push("/app/account");
     });
   }, [router]);
 
@@ -66,13 +67,13 @@ export default function SignupPage() {
       return;
     }
 
-    if (data.session && data.user?.email_confirmed_at) {
+    if (data.session && data.user && hasVerifiedEmail(data.user)) {
       recordAuthActivity(data.session.user.id);
       router.push("/app/account");
       return;
     }
 
-    if (data.session && !data.user?.email_confirmed_at) {
+    if (data.session && data.user && !hasVerifiedEmail(data.user)) {
       await supabase.auth.signOut();
     }
 

@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { parseSearchPrompt } from "@/lib/ai/query-parser";
+import { planSearchStrategy, strategyLocation } from "@/lib/search/planner";
+import { collectBraveResults } from "@/lib/search/collect";
+import { braveProspectingEnabled } from "@/lib/search/limits";
 import {
+  completeBraveSearch,
   createSearch,
   failSearchAndRefund,
+  saveProspecting,
   startProviderSearch,
 } from "@/lib/services/search-service";
 import { requireUser } from "@/lib/supabase/server";
@@ -80,28 +85,46 @@ export async function POST(request: NextRequest) {
     const merged = interpreted.query
       ? applyFilters(interpreted.query, parsed.data.filters)
       : queryFromFilters(parsed.data.filters);
-
-    if (!merged) {
+    const explicitBuyer = parsed.data.filters.businessCategory.trim();
+    const explicitLocation = parsed.data.filters.location.trim();
+    const strategy = braveProspectingEnabled()
+      ? await planSearchStrategy(parsed.data.prompt, explicitLocation)
+      : null;
+    if (!merged.success && !strategy) {
       return NextResponse.json(
-        {
-          error:
-            "We could not tell which clients to find. Describe your offer or the client type, and choose an area.",
-        },
+        { error: merged.error.issues[0]?.message ?? "Describe what you sell so we can find the clients who need it." },
         { status: 422 }
       );
     }
 
-    if (!merged.success) {
+    const plannedBuyer = strategy?.idealCustomerProfiles[0]?.businessTypes[0] ?? strategy?.productSummary ?? "";
+    const plannedLocation = strategy ? strategyLocation(strategy, "") : "";
+    const parsedQuery = merged.success ? merged.data : null;
+    const businessCategory = explicitBuyer || parsedQuery?.businessCategory || plannedBuyer;
+    const location = explicitLocation || parsedQuery?.location || plannedLocation;
+    const needsMaps = strategy ? strategy.needsMaps && location.length >= 2 : true;
+    const replanned = businessSearchQuerySchema.safeParse({
+      ...(parsedQuery ?? {}),
+      businessCategory,
+      location,
+      mapsQueries: needsMaps ? strategy?.mapsQueries ?? parsedQuery?.mapsQueries ?? [] : [],
+      websiteCondition: parsedQuery?.websiteCondition ?? parsed.data.filters.websiteCondition,
+      phoneRequired: parsedQuery?.phoneRequired ?? parsed.data.filters.phoneRequired,
+      emailRequired: parsedQuery?.emailRequired ?? parsed.data.filters.emailRequired,
+      resultLimit: parsedQuery?.resultLimit ?? numberOrFallback(parsed.data.filters.resultLimit, 25),
+    });
+    if (!replanned.success || businessCategory.trim().length < 2 || (needsMaps && location.trim().length < 2)) {
       return NextResponse.json(
-        { error: merged.error.issues[0]?.message ?? "Invalid search filters" },
-        { status: 400 }
+        { error: "Describe what you sell so we can find the clients who need it." },
+        { status: 422 }
       );
     }
+    const query = replanned.data;
 
     const created = await createSearch(
       user.id,
       parsed.data.prompt,
-      merged.data,
+      query,
       parsed.data.idempotencyKey
     );
     if (created.quotaExceeded) {
@@ -114,24 +137,63 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: created.error ?? "Failed to create search" }, { status: 500 });
     }
 
-    try {
-      await startProviderSearch(created.searchId, user.id);
-    } catch {
-      await failSearchAndRefund(
-        created.searchId,
-        "PROVIDER_START_FAILED",
-        "Business discovery could not be started. Please try again."
-      );
-      return NextResponse.json(
-        { error: "Business discovery could not be started. Please try again." },
-        { status: 502 }
-      );
+    const webPromise = strategy ? collectBraveResults(strategy) : null;
+
+    if (!needsMaps && strategy && webPromise) {
+      try {
+        const web = await webPromise;
+        await completeBraveSearch(created.searchId, strategy, web.results);
+      } catch {
+        await failSearchAndRefund(
+          created.searchId,
+          "WEB_SEARCH_FAILED",
+          "Client search could not be completed. Please try again."
+        );
+        return NextResponse.json(
+          { error: "Client search could not be completed. Please try again." },
+          { status: 502 }
+        );
+      }
+    } else {
+      try {
+        await startProviderSearch(created.searchId, user.id);
+      } catch {
+        const web = webPromise ? await webPromise.catch(() => null) : null;
+        if (strategy && web?.results.length) {
+          await completeBraveSearch(created.searchId, strategy, web.results);
+        } else {
+          await failSearchAndRefund(
+            created.searchId,
+            "PROVIDER_START_FAILED",
+            "Business discovery could not be started. Please try again."
+          );
+          return NextResponse.json(
+            { error: "Business discovery could not be started. Please try again." },
+            { status: 502 }
+          );
+        }
+      }
+
+      if (strategy && webPromise && needsMaps) {
+        try {
+          const web = await webPromise;
+          const unavailable = web.failures > 0 && web.results.length === 0;
+          await saveProspecting(
+            created.searchId,
+            strategy,
+            web.results,
+            unavailable ? "Web signal search was unavailable." : null
+          );
+        } catch {
+          await saveProspecting(created.searchId, strategy, [], "Web signal search was unavailable.");
+        }
+      }
     }
 
     return NextResponse.json(
       {
         searchId: created.searchId,
-        parsedQuery: { ...merged.data, resultLimit: created.resultLimit ?? merged.data.resultLimit },
+        parsedQuery: { ...query, resultLimit: created.resultLimit ?? query.resultLimit },
       },
       { status: 202 }
     );

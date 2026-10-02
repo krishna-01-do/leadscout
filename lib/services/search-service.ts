@@ -6,6 +6,11 @@ import { ApifyBusinessSearchProvider } from "@/lib/providers/apify-provider";
 import { MockBusinessSearchProvider } from "@/lib/providers/mock-provider";
 import { deduplicateBusinesses } from "@/lib/scoring/dedup";
 import { qualifyBusiness } from "@/lib/scoring/engine";
+import { braveProspectingEnabled } from "@/lib/search/limits";
+import { buildProspects, type BuiltProspect } from "@/lib/search/pipeline";
+import { usableWebResults } from "@/lib/search/prospects";
+import { searchStrategySchema, qualificationSchema, type ProspectQualification } from "@/schemas/prospecting";
+import type { BraveWebResult, SearchStrategy } from "@/schemas/prospecting";
 import { recordLeadUsage } from "@/lib/usage/service";
 import { businessSearchQuerySchema } from "@/schemas/search";
 import type {
@@ -28,6 +33,7 @@ function providerForName(name: ProviderName) {
     return new MockBusinessSearchProvider();
   }
   if (name === "apify") return new ApifyBusinessSearchProvider();
+  if (name === "brave") throw new Error("Brave results are collected directly");
   throw new Error(`Unsupported provider: ${name}`);
 }
 
@@ -208,7 +214,14 @@ export async function processProviderRun(runId: string): Promise<void> {
       run.datasetId = metadata?.datasetId ?? undefined;
     }
 
-    if (run.status === "FAILED") {
+    const strategyResult = braveProspectingEnabled()
+      ? searchStrategySchema.safeParse(search.search_strategy)
+      : null;
+    const webResults = usableWebResults(search.web_results);
+    const mapsUnavailable = run.status === "FAILED";
+    const continueWithWeb = mapsUnavailable && Boolean(strategyResult?.success) && webResults.length > 0;
+
+    if (mapsUnavailable && !continueWithWeb) {
       await failSearchAndRefund(searchId, "PROVIDER_FAILED", "Business discovery failed.");
       await database.from("provider_runs").update({
         status: "FAILED",
@@ -216,7 +229,7 @@ export async function processProviderRun(runId: string): Promise<void> {
       }).eq("id", providerRun.id);
       return;
     }
-    if (run.status !== "SUCCEEDED") return;
+    if (run.status !== "SUCCEEDED" && !continueWithWeb) return;
 
     // The Apify webhook and browser recovery polling can arrive together. Claim
     // processing once so they cannot race while writing the same result set.
@@ -230,19 +243,45 @@ export async function processProviderRun(runId: string): Promise<void> {
     if (!claimed) return;
     claimedProcessing = true;
     const query = businessSearchQuerySchema.parse(search.parsed_query);
-    const rawBusinesses = await provider.getResults(run, query);
-    const businesses = deduplicateBusinesses(rawBusinesses).slice(0, search.requested_result_limit);
+    const rawBusinesses = continueWithWeb ? [] : await provider.getResults(run, query);
+    const deduped = deduplicateBusinesses(rawBusinesses);
+    const strategy = strategyResult;
+    const prospects = strategy?.success
+      ? buildProspects(deduped, webResults, strategy.data, query.location).slice(0, search.requested_result_limit)
+      : null;
+    const businesses = prospects
+      ? prospects.map((prospect) => prospect.business)
+      : deduped.slice(0, search.requested_result_limit);
 
     await updateSearchStatus(searchId, "SCORING");
-    const qualified = businesses
-      .map((business, index) => qualifyBusiness(business, query, index + 1))
-      .sort((a, b) => b.matchScore - a.matchScore)
-      .map((business, index) => ({ ...business, rank: index + 1 }));
+    const qualified = prospects
+      ? scoreProspects(prospects)
+      : businesses
+          .map((business, index) => qualifyBusiness(business, query, index + 1))
+          .sort((a, b) => b.matchScore - a.matchScore)
+          .map((business, index) => ({ ...business, rank: index + 1 }));
+    const qualifications = new Map(prospects?.map((prospect) => [
+      `${prospect.business.provider}:${prospect.business.providerBusinessId}`,
+      prospect.qualification,
+    ]) ?? []);
 
-    await persistResults(searchId, businesses, qualified);
+    console.info("ApplyVelocity search pipeline", {
+      searchId,
+      mapsResults: rawBusinesses.length,
+      webResults: webResults.length,
+      prospects: qualified.length,
+      brave: Boolean(strategy?.success),
+    });
+
+    await persistResults(searchId, businesses, qualified, qualifications);
     await recordLeadUsage(search.user_id, searchId, qualified.length);
+    if (continueWithWeb) {
+      await database.from("searches").update({
+        prospecting_error: "Business listings were unavailable. These prospects come from public web signals only.",
+      }).eq("id", searchId);
+    }
     await database.from("provider_runs").update({
-      status: "SUCCEEDED",
+      status: continueWithWeb ? "FAILED" : "SUCCEEDED",
       received_results: rawBusinesses.length,
       completed_at: new Date().toISOString(),
     }).eq("id", providerRun.id);
@@ -269,7 +308,8 @@ export async function processProviderRun(runId: string): Promise<void> {
 async function persistResults(
   searchId: string,
   businesses: NormalizedBusiness[],
-  qualified: QualifiedResult[]
+  qualified: QualifiedResult[],
+  qualifications: Map<string, ProspectQualification> = new Map()
 ) {
   if (!businesses.length) return;
   const database = createSupabaseAdmin();
@@ -304,17 +344,20 @@ async function persistResults(
     `${row.provider}:${row.provider_business_id}`,
     row.id as string,
   ]));
-  const resultRows = qualified.flatMap((result) => {
+    const resultRows = qualified.flatMap((result) => {
     const businessId = ids.get(`${result.provider}:${result.providerBusinessId}`);
-    return businessId ? [{
+    if (!businessId) return [];
+    const qualification = qualifications.get(`${result.provider}:${result.providerBusinessId}`);
+    return [{
       search_id: searchId,
       business_id: businessId,
       match_score: result.matchScore,
       qualified: result.qualified,
       qualification_reason: result.qualificationReason,
+      ...(qualification ? { qualification } : {}),
       opportunity_flags: result.opportunityFlags,
       rank: result.rank,
-    }] : [];
+    }];
   });
   if (!resultRows.length) return;
   const { error: resultError } = await database.from("search_results")
@@ -339,6 +382,73 @@ async function updateSearchStatus(
   if (resultCount !== undefined) updates.result_count = resultCount;
   const { error } = await createSupabaseAdmin().from("searches").update(updates).eq("id", searchId);
   if (error) throw new Error("Could not update search status");
+}
+
+function scoreProspects(prospects: BuiltProspect[]): QualifiedResult[] {
+  return prospects.map((prospect, index) => ({
+    ...prospect.business,
+    matchScore: prospect.qualification.total,
+    qualified: prospect.qualification.icpFit >= 20,
+    qualificationReason: prospect.qualification.reason,
+    opportunityFlags: [],
+    rank: index + 1,
+  }));
+}
+
+export async function completeBraveSearch(
+  searchId: string,
+  strategy: SearchStrategy,
+  webResults: BraveWebResult[]
+) {
+  const database = createSupabaseAdmin();
+  const { data: search } = await database.from("searches").select("*").eq("id", searchId).maybeSingle();
+  if (!search || ["COMPLETED", "FAILED"].includes(search.status)) return false;
+  const query = businessSearchQuerySchema.parse(search.parsed_query);
+  const prospects = buildProspects([], usableWebResults(webResults), strategy, query.location)
+    .slice(0, search.requested_result_limit);
+  await saveProspecting(
+    searchId,
+    strategy,
+    webResults,
+    prospects.length ? null : "No public clients were found for this offer."
+  );
+  if (!prospects.length) {
+    await failSearchAndRefund(searchId, "NO_RESULTS", "No matching clients were found for that offer.");
+    return false;
+  }
+  const qualified = scoreProspects(prospects);
+  const qualifications = new Map(prospects.map((prospect) => [
+    `${prospect.business.provider}:${prospect.business.providerBusinessId}`,
+    prospect.qualification,
+  ]));
+  await updateSearchStatus(searchId, "SCORING");
+  await persistResults(searchId, prospects.map((prospect) => prospect.business), qualified, qualifications);
+  await recordLeadUsage(search.user_id, searchId, qualified.length);
+  await updateSearchStatus(searchId, "COMPLETED", qualified.length);
+  console.info("ApplyVelocity search pipeline", {
+    searchId,
+    mapsResults: 0,
+    webResults: webResults.length,
+    prospects: qualified.length,
+    brave: true,
+  });
+  return true;
+}
+
+export async function saveProspecting(
+  searchId: string,
+  strategy: SearchStrategy,
+  webResults: BraveWebResult[],
+  error: string | null
+) {
+  const { error: updateError } = await createSupabaseAdmin().from("searches").update({
+    search_strategy: strategy,
+    web_results: webResults,
+    prospecting_error: error,
+  }).eq("id", searchId);
+  if (updateError) {
+    console.error("ApplyVelocity prospecting save failed", { searchId, code: updateError.code });
+  }
 }
 
 export async function recoverSearch(searchId: string, userId: string) {
@@ -381,7 +491,7 @@ export async function getSearchResults(
 
   const { data: results, error } = await database.from("search_results").select(`
     id, search_id, business_id, match_score, qualified, qualification_reason,
-    opportunity_flags, rank, businesses (*)
+    qualification, opportunity_flags, rank, businesses (*)
   `).eq("search_id", searchId).order("rank", { ascending: true });
   if (error) return { results: [], search: mapSearchRecord(search), error: "Failed to load results." };
 
@@ -396,6 +506,9 @@ export async function getSearchResults(
       matchScore: row.match_score,
       qualified: row.qualified,
       qualificationReason: row.qualification_reason ?? "",
+      qualification: qualificationSchema.safeParse(row.qualification).success
+        ? qualificationSchema.parse(row.qualification)
+        : null,
       opportunityFlags: row.opportunity_flags ?? [],
       rank: row.rank,
       business: mapBusiness(business),
@@ -457,6 +570,7 @@ function mapSearchRecord(row: Record<string, unknown>): SearchRecord {
     resultCount: row.result_count as number,
     errorCode: (row.error_code as string) ?? null,
     errorMessage: (row.error_message as string) ?? null,
+    prospectingError: (row.prospecting_error as string) ?? null,
     createdAt: row.created_at as string,
     startedAt: (row.started_at as string) ?? null,
     completedAt: (row.completed_at as string) ?? null,

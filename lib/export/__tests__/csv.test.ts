@@ -10,6 +10,7 @@ function makeResult(overrides: Partial<SearchResultRow> = {}): SearchResultRow {
     matchScore: 94,
     qualified: true,
     qualificationReason: "Strong match: dental clinic in Hyderabad.",
+    qualification: null,
     opportunityFlags: ["NO_WEBSITE", "HIGH_RATING"],
     rank: 1,
     business: {

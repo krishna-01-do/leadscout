@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { hasVerifiedEmail } from "@/lib/auth/verified";
 
 export async function proxy(request: NextRequest) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -22,14 +23,14 @@ export async function proxy(request: NextRequest) {
 
   const { data } = await supabase.auth.getUser();
   const user = data.user;
-  if (user && !user.email_confirmed_at && request.nextUrl.pathname.startsWith("/app")) {
+  if (user && !hasVerifiedEmail(user) && request.nextUrl.pathname.startsWith("/app")) {
     await supabase.auth.signOut();
     return NextResponse.redirect(new URL("/login?error=confirm_email", request.url));
   }
   if (!user && request.nextUrl.pathname.startsWith("/app")) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
-  if (user?.email_confirmed_at && ["/login", "/signup", "/forgot-password"].includes(request.nextUrl.pathname)) {
+  if (user && hasVerifiedEmail(user) && ["/login", "/signup", "/forgot-password"].includes(request.nextUrl.pathname)) {
     return NextResponse.redirect(new URL("/app/account", request.url));
   }
   return response;

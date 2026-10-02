@@ -281,7 +281,7 @@ export default function SearchPage() {
         <p className="section-kicker">Workspace</p>
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Find Prospects</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Describe your offer or the clients you want. We build the best client list for the area you select.
+          Describe what you sell. We find the clients who are likely to need it.
         </p>
       </div>
 
@@ -353,6 +353,12 @@ export default function SearchPage() {
               )}
             </div>
           </div>
+
+          {search?.prospectingError && (
+            <p className="rounded-xl border border-border/60 bg-card px-4 py-3 text-sm text-muted-foreground">
+              {search.prospectingError}
+            </p>
+          )}
 
           {results.length > 0 ? (
             <ResultsTable 

@@ -58,7 +58,7 @@ export function SearchInput({ onSearch, loading, disabled }: SearchInputProps) {
   });
 
   const handleSearch = useCallback(() => {
-    if (!prompt.trim() || !filters.location.trim() || loading || disabled) return;
+    if (!prompt.trim() || loading || disabled) return;
     onSearch(prompt.trim(), filters);
   }, [prompt, loading, disabled, onSearch, filters]);
 
@@ -76,42 +76,11 @@ export function SearchInput({ onSearch, loading, disabled }: SearchInputProps) {
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Describe your business, the service you sell, or the clients you want..."
+          placeholder="What do you sell, and who do you want to sell it to?"
           className="min-h-[100px] resize-none border-2 pr-12 text-base"
           disabled={disabled}
         />
         <Search className="absolute right-4 top-4 h-5 w-5 text-muted-foreground" />
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-1.5">
-          <Label htmlFor="target-business-type">Client type</Label>
-          <Input
-            id="target-business-type"
-            value={filters.businessCategory}
-            onChange={(e) => setFilters({ ...filters, businessCategory: e.target.value })}
-            placeholder="Optional, e.g., dental clinics"
-            disabled={disabled}
-          />
-          <p className="text-xs text-muted-foreground">
-            Optional. Name the clients if you already know them. Otherwise we infer them from your prompt.
-          </p>
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="target-location">Target location <span className="text-destructive" aria-hidden="true">*</span><span className="sr-only"> (required)</span></Label>
-          <Input
-            id="target-location"
-            value={filters.location}
-            onChange={(e) => setFilters({ ...filters, location: e.target.value })}
-            placeholder="e.g., Hyderabad"
-            disabled={disabled}
-            required
-            aria-required="true"
-          />
-          <p className="text-xs text-muted-foreground">
-            Required. The city or area where you want that client list.
-          </p>
-        </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
@@ -139,7 +108,7 @@ export function SearchInput({ onSearch, loading, disabled }: SearchInputProps) {
 
         <Button
           onClick={handleSearch}
-          disabled={!prompt.trim() || !filters.location.trim() || loading || disabled}
+          disabled={!prompt.trim() || loading || disabled}
           size="lg"
           className="w-full sm:w-auto"
         >
@@ -151,7 +120,7 @@ export function SearchInput({ onSearch, loading, disabled }: SearchInputProps) {
           ) : (
             <>
               <Sparkles className="mr-2 h-4 w-4" />
-              Find Leads
+              Find Clients
             </>
           )}
         </Button>
@@ -160,6 +129,30 @@ export function SearchInput({ onSearch, loading, disabled }: SearchInputProps) {
       {showAdvanced && (
         <div className="rounded-xl border border-border/60 bg-card p-4">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="target-business-type" className="text-xs">Client type</Label>
+              <Input
+                id="target-business-type"
+                value={filters.businessCategory}
+                onChange={(e) => setFilters({ ...filters, businessCategory: e.target.value })}
+                placeholder="Optional, e.g., dental clinics"
+                className="h-9"
+                disabled={disabled}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="target-location" className="text-xs">Location</Label>
+              <Input
+                id="target-location"
+                value={filters.location}
+                onChange={(e) => setFilters({ ...filters, location: e.target.value })}
+                placeholder="Optional, e.g., Hyderabad"
+                className="h-9"
+                disabled={disabled}
+              />
+            </div>
+
             <div className="space-y-1.5">
               <Label className="text-xs">Website Status</Label>
               <Select
