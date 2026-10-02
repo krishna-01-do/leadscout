@@ -1,8 +1,8 @@
 export const branding = {
   name: "ApplyVelocity",
-  tagline: "Find your next customers with one prompt.",
+  tagline: "Find the clients most ready to buy.",
   description:
-    "Describe your business, your service, or the clients you want. We find the best local client list in the area you choose.",
+    "Describe what you sell. ApplyVelocity scans Google Maps, Google, LinkedIn, Reddit, blogs, news, and company sites, then ranks the clients most likely to convert.",
   domain: "www.applyvelocity.com",
   email: "hello@applyvelocity.com",
 } as const;
@@ -58,6 +58,13 @@ export const pricing = {
 
 export type PricingPlanKey = keyof typeof pricing;
 export type PaidPlanKey = PricingPlanKey;
+
+// Public offer. Uncomment a key to sell that plan again.
+export const offeredPlanKeys = [
+  // "basic",
+  "pro",
+  // "plus",
+] as const satisfies readonly PaidPlanKey[];
 
 export function pricingPlanBenefits(key: PricingPlanKey) {
   const plan = pricing[key];

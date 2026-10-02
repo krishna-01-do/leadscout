@@ -19,7 +19,7 @@ export function ExampleSearches() {
           Try searches like these
         </h2>
         <p className="mt-2 text-center text-sm text-muted-foreground">
-          Describe the offer, or name the clients. Pick the area and we build the list.
+          Describe the offer. We scan Maps and the public web, then rank who is most likely to buy.
         </p>
 
         <div className="mt-8 flex flex-wrap justify-center gap-2">

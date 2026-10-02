@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { pricing, pricingPlanBenefits } from "@/lib/branding";
+import { offeredPlanKeys, pricing, pricingPlanBenefits } from "@/lib/branding";
 
 describe("pricingPlanBenefits", () => {
   it.each(["basic", "pro", "plus"] as const)(
@@ -21,5 +21,6 @@ describe("pricingPlanBenefits", () => {
     expect(pricing.basic.searches).toBe(10);
     expect(pricing.pro.searches).toBe(30);
     expect(pricing.plus.searches).toBe(60);
+    expect(offeredPlanKeys).toEqual(["pro"]);
   });
 });

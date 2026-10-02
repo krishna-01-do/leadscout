@@ -13,7 +13,7 @@ export function ValueProp() {
                 <span className="text-sm font-medium">Instead of</span>
               </div>
               <p className="mt-2 text-lg font-medium text-muted-foreground line-through decoration-muted-foreground/40">
-                Hours searching Google Maps manually
+                Hours jumping between Maps, LinkedIn, Reddit, and blogs
               </p>
             </div>
 
@@ -23,15 +23,15 @@ export function ValueProp() {
                 <span className="text-sm font-medium">Use</span>
               </div>
               <p className="mt-2 text-xl font-bold">
-                One prompt and an area → a client list
+                One prompt → the buyers most likely to convert
               </p>
             </div>
           </div>
 
           <div className="relative mt-8 flex flex-wrap items-center justify-center gap-3 text-center text-sm text-muted-foreground">
-            <span>Stop scrolling through Google Maps</span>
+            <span>Stop hunting across tabs</span>
             <ArrowRight className="h-4 w-4" />
-            <span className="font-medium text-foreground">Start closing deals</span>
+            <span className="font-medium text-foreground">Start with the highest-fit list</span>
           </div>
         </div>
       </div>

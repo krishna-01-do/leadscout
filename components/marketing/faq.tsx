@@ -8,15 +8,15 @@ import {
 const faqs = [
   {
     q: "What does ApplyVelocity actually do?",
-    a: "You describe your business, the service you sell, or the clients you want — for example, 'I built appointment automation. Find clinics in Pune I can sell it to.' You choose the area. We turn that into a scored client list you can filter, sort, and export to CSV.",
+    a: "You describe what you sell, or who should buy it. ApplyVelocity searches Google Maps and the public web — Google, LinkedIn, Reddit, blogs, news, and company sites — then ranks the clients most likely to convert. You filter, sort, and export the list to CSV.",
   },
   {
-    q: "Do I need to know how to scrape Google Maps?",
-    a: "No. That's the whole point. You just describe what you're looking for. We handle the search, data normalization, and qualification behind the scenes.",
+    q: "Which sources does a search cover?",
+    a: "Google Maps when you name a place, plus open-web results that can include Google pages, LinkedIn, Reddit, blogs, news, directories, and company websites. Public contact details are kept when they exist. We do not invent emails or phone numbers.",
   },
   {
     q: "What is an 'opportunity score'?",
-    a: "Every business gets a match score from 0 to 100 based on how well it fits the clients you asked for — category, location, rating, reviews, and contact availability. The reason next to each result tells you why they belong on the list.",
+    a: "Every prospect gets a score from 0 to 100. The model weighs how well they match the buyer profile, whether public pages show a buying signal such as hiring or expansion, and how reachable they are. The note beside each result explains the match.",
   },
   {
     q: "Can I export the results?",
@@ -24,7 +24,7 @@ const faqs = [
   },
   {
     q: "Is there a free trial?",
-    a: "No free trial searches. Create an account, verify your email, and choose Basic, Pro, or Plus to start finding prospects. You can also sign up with Google.",
+    a: "No free searches. Create an account, verify your email or sign up with Google, then start the monthly plan to find prospects.",
   },
   {
     q: "Will my old searches rerun and cost me credits?",

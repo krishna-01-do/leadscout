@@ -314,7 +314,7 @@ export default function SearchPage() {
           </div>
           <h2 className="mt-4 text-lg font-semibold">Choose a plan to search.</h2>
           <p className="mt-1 text-sm text-muted-foreground max-w-sm">
-            Activate Basic, Pro, or Plus on Account to find qualified prospects.
+            Start the monthly plan on Account to find qualified prospects.
           </p>
           <Button className="mt-6" onClick={() => router.push("/app/account")}>
             <Sparkles className="mr-2 h-4 w-4" />
