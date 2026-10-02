@@ -17,7 +17,7 @@ export function WhoItsFor() {
           Who It's For
         </h2>
         <p className="mt-2 text-center text-sm text-muted-foreground">
-          Built for anyone who sells a service and needs local clients.
+          Built for anyone selling a product or service who wants the buyers most likely to convert.
         </p>
 
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

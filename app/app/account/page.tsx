@@ -282,10 +282,10 @@ export default function AccountPage() {
           <div className="mx-auto max-w-3xl text-center">
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-background/80 px-3 py-1 text-xs font-medium text-primary">
               <Sparkles className="h-3.5 w-3.5" />
-              {hasActivePlan ? "Renew or upgrade" : "Choose your plan"}
+              {hasActivePlan ? "Renew your plan" : "One monthly plan"}
             </div>
             <h2 className="mt-4 text-xl font-bold tracking-tight sm:text-3xl">
-              {hasActivePlan ? "Keep your prospecting capacity active" : "Unlock prospect searches"}
+              {hasActivePlan ? "Keep your prospecting capacity active" : "Start finding clients"}
             </h2>
             <p className="mt-2 text-sm text-muted-foreground sm:text-base">
               Plans are billed monthly. When the period ends, renew to refresh your search and lead quota.

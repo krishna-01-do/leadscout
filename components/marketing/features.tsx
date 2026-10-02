@@ -3,43 +3,43 @@ import { MessageSquare, MapPin, Filter, Gauge, Phone, FileDown, History, Globe }
 const features = [
   {
     icon: MessageSquare,
-    title: "Natural-language prospect search",
-    description: "Describe your offer or the clients you want. One prompt is enough.",
+    title: "One prompt, a buyer profile",
+    description: "Describe the offer. AI turns it into who should buy, where they show up, and what to search.",
+  },
+  {
+    icon: Globe,
+    title: "Multi-source scan",
+    description: "Google Maps, Google, LinkedIn, Reddit, blogs, news, and company sites in the same search.",
   },
   {
     icon: MapPin,
-    title: "Local business discovery",
-    description: "Search the city or area you choose and return the businesses most likely to buy.",
-  },
-  {
-    icon: Filter,
-    title: "Smart filtering",
-    description: "Filter by rating, reviews, website status, phone availability, and more.",
+    title: "Local when it matters",
+    description: "Name a city and Maps joins the scan, with ratings, reviews, and public contact details.",
   },
   {
     icon: Gauge,
-    title: "Opportunity scoring",
-    description: "Every prospect gets a match score so you know which leads to prioritize.",
+    title: "Conversion ranking",
+    description: "Fit, buying signals, and reachability combine into one score so the best calls rise to the top.",
+  },
+  {
+    icon: Filter,
+    title: "Signal-first filtering",
+    description: "Narrow by rating, reviews, website, phone, and the reason each prospect matched.",
   },
   {
     icon: Phone,
-    title: "Contact details",
-    description: "Get phone numbers, emails, and addresses for every prospect.",
+    title: "Public contact details",
+    description: "Phone, website, and email when they are already public. Nothing is invented.",
   },
   {
     icon: FileDown,
     title: "CSV export",
-    description: "Export selected leads or all results to CSV for your outreach workflow.",
+    description: "Export selected leads or the full ranked list into the workflow you already use.",
   },
   {
     icon: History,
     title: "Search history",
-    description: "Revisit past searches and results without running a new provider search.",
-  },
-  {
-    icon: Globe,
-    title: "Client-fit reasons",
-    description: "See why each business belongs on the list, so you know who to contact first.",
+    description: "Reopen a past list without spending another search.",
   },
 ];
 
@@ -52,8 +52,8 @@ export function Features() {
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
             Core Features
           </h2>
-          <p className="mt-3 text-muted-foreground">
-            Everything you need to find and qualify local business prospects.
+          <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
+            Built to find buyers who can convert, not a dump of every business in a city.
           </p>
         </div>
 
