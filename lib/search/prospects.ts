@@ -93,12 +93,20 @@ export function evidenceFromResult(result: BraveWebResult): ProspectEvidence {
   };
 }
 
+function nameFromDomain(domain: string) {
+  const brand = domain.split(".")[0]?.replace(/[-_]/g, " ").trim() ?? "";
+  if (brand.length < 3 || brand.split(/\s+/).length > 3) return "";
+  return brand.replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
 export function webOnlyBusiness(result: BraveWebResult, country: string | null): NormalizedBusiness | null {
   const domain = normalizedDomain(result.url);
-  if (!domain || ignoredDomains.has(domain) || ignoredDomains.has(domain.split(".").slice(-2).join("."))) return null;
+  const rootDomain = domain.split(".").slice(-2).join(".");
+  if (!domain || ignoredDomains.has(domain) || ignoredDomains.has(rootDomain)) return null;
   const headline = result.title.split(/[|\-–:]/)[0]?.trim() ?? "";
-  const name = headline.replace(/\b(announces|announced|hiring|is hiring|opens|opening|launches).*/i, "").trim().slice(0, 120);
-  if (!name || name.split(/\s+/).length > 8) return null;
+  const fromTitle = headline.replace(/\b(announces|announced|hiring|is hiring|opens|opening|launches).*/i, "").trim().slice(0, 120);
+  const name = fromTitle && fromTitle.split(/\s+/).length <= 8 ? fromTitle : nameFromDomain(domain);
+  if (!name) return null;
   return {
     id: "",
     provider: "brave",
@@ -123,6 +131,42 @@ export function webOnlyBusiness(result: BraveWebResult, country: string | null):
   };
 }
 
+export function looseWebBusiness(result: BraveWebResult, country: string | null): NormalizedBusiness | null {
+  let url: URL;
+  try {
+    url = new URL(result.url);
+  } catch {
+    return null;
+  }
+  if (url.protocol !== "http:" && url.protocol !== "https:") return null;
+  const domain = normalizedDomain(result.url);
+  if (!domain || domain === "google.com" || domain.endsWith(".google.com")) return null;
+  const name = result.title.trim().slice(0, 120) || nameFromDomain(domain);
+  if (!name) return null;
+  return {
+    id: "",
+    provider: "brave",
+    providerBusinessId: `loose:${result.url}`.slice(0, 200),
+    name,
+    category: "Possible match",
+    address: null,
+    city: null,
+    state: null,
+    country,
+    latitude: null,
+    longitude: null,
+    phone: null,
+    email: null,
+    website: url.toString(),
+    rating: null,
+    reviewCount: null,
+    googleMapsUrl: null,
+    openingHours: null,
+    socialLinks: null,
+    metadata: { looseMatch: true },
+  };
+}
+
 function clamp(value: number, max: number) {
   return Math.max(0, Math.min(max, value));
 }
@@ -143,7 +187,8 @@ export function qualifyProspect(
   );
   const painSignal = clamp(evidence.reduce((sum, item) => sum + (item.type === "mention" ? 0 : item.strength), 0), scoreWeights.pain);
   const contactability = clamp((business.phone ? 8 : 0) + (business.website ? 7 : 0) + (business.email ? 5 : 0), scoreWeights.contact);
-  const buyingSignal = evidence.some((item) => item.type !== "mention");
+  const loose = business.metadata?.looseMatch === true;
+  const buyingSignal = !loose && evidence.some((item) => item.type !== "mention");
   const reasons = [
     typeMatch ? `Matches a buyer type from the offer: ${types.find((type) => haystack.includes(type.toLowerCase()))}.` : "Business was discovered for this offer, without a closer category match.",
     locationMatch ? `Located in ${location}.` : null,
@@ -153,7 +198,9 @@ export function qualifyProspect(
     business.website ? "Website is available." : null,
   ].filter((reason): reason is string => Boolean(reason));
   const signal = evidence.find((item) => item.type !== "mention");
-  const reason = buyingSignal
+  const reason = loose
+    ? `Closest public page found for this offer: "${evidence[0]?.title ?? business.name}". This is a possible lead, not a confirmed buyer.`
+    : buyingSignal
     ? `${business.name} matches the buyer profile and has public evidence: ${signal?.title}.`
     : icpFit >= 20
       ? "Strong ICP match based on business type and location, but no direct buying signal was found."

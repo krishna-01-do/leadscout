@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 import { dedupeQueries } from "@/lib/search/queries";
 import { buildProspects } from "@/lib/search/pipeline";
-import { matchWebResult, usableWebResults } from "@/lib/search/prospects";
+import { matchWebResult, usableWebResults, webOnlyBusiness } from "@/lib/search/prospects";
 import { fallbackStrategy, strategyLocation } from "@/lib/search/planner";
 import { searchStrategySchema } from "@/schemas/prospecting";
 import type { NormalizedBusiness } from "@/types";
@@ -139,6 +139,36 @@ describe("prospect matching and scoring", () => {
     expect(prospects).toHaveLength(1);
     expect(prospects[0].business.provider).toBe("brave");
     expect(prospects[0].qualification.sources[0]?.url).toBe("https://harborfoods.example/news");
+  });
+
+  it("returns a possible lead when the only page is not a clean company listing", () => {
+    const prospects = buildProspects([], [{
+      title: "Companies hiring inventory managers in New York this month",
+      url: "https://www.linkedin.com/jobs/view/123",
+      description: "Warehouse and truck loading roles",
+      domain: "linkedin.com",
+      query: "inventory manager hiring",
+      sourceType: "web",
+      publishedAt: null,
+    }], strategy, "New York");
+    expect(prospects).toHaveLength(1);
+    expect(prospects[0].qualification.buyingSignal).toBe(false);
+    expect(prospects[0].qualification.reason).toContain("possible lead");
+    expect(prospects[0].qualification.sources[0]?.url).toBe("https://www.linkedin.com/jobs/view/123");
+  });
+
+  it("keeps a company site when the page title is a long headline", () => {
+    const business = webOnlyBusiness({
+      title: "How fleet operators are changing trailer loading workflows this year",
+      url: "https://harborfreightlines.example/news/loading",
+      description: "New York fleet update",
+      domain: "harborfreightlines.example",
+      query: "truck loading",
+      sourceType: "web",
+      publishedAt: null,
+    }, "United States");
+    expect(business?.name).toBe("Harborfreightlines");
+    expect(business?.website).toBe("https://harborfreightlines.example");
   });
 
   it("drops stored web rows that do not include a real source URL", () => {
