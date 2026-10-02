@@ -102,12 +102,14 @@ export async function POST(request: NextRequest) {
     const parsedQuery = merged.success ? merged.data : null;
     const businessCategory = explicitBuyer || parsedQuery?.businessCategory || plannedBuyer;
     const location = explicitLocation || parsedQuery?.location || plannedLocation;
-    const needsMaps = strategy ? strategy.needsMaps && location.length >= 2 : true;
+    const needsMaps = location.trim().length >= 2;
     const replanned = businessSearchQuerySchema.safeParse({
       ...(parsedQuery ?? {}),
       businessCategory,
       location,
-      mapsQueries: needsMaps ? strategy?.mapsQueries ?? parsedQuery?.mapsQueries ?? [] : [],
+      mapsQueries: needsMaps
+        ? (strategy?.mapsQueries.length ? strategy.mapsQueries : [businessCategory].filter((item) => item.trim().length >= 2))
+        : [],
       websiteCondition: parsedQuery?.websiteCondition ?? parsed.data.filters.websiteCondition,
       phoneRequired: parsedQuery?.phoneRequired ?? parsed.data.filters.phoneRequired,
       emailRequired: parsedQuery?.emailRequired ?? parsed.data.filters.emailRequired,

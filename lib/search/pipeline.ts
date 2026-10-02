@@ -3,6 +3,7 @@ import {
   evidenceFromResult,
   matchWebResult,
   normalizedDomain,
+  looseWebBusiness,
   qualifyProspect,
   webOnlyBusiness,
 } from "@/lib/search/prospects";
@@ -39,6 +40,16 @@ export function buildProspects(
     if (!created || !domain || seen.has(domain)) continue;
     seen.add(domain);
     leads.push({ business: created, evidence: [evidence] });
+  }
+
+  if (!leads.length) {
+    const looseSeen = new Set<string>();
+    for (const result of web) {
+      const created = looseWebBusiness(result, strategy.targetMarket.countries[0] ?? null);
+      if (!created || looseSeen.has(created.providerBusinessId)) continue;
+      looseSeen.add(created.providerBusinessId);
+      leads.push({ business: created, evidence: [evidenceFromResult(result)] });
+    }
   }
 
   return leads

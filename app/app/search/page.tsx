@@ -156,7 +156,7 @@ export default function SearchPage() {
             }
             fetchUsage();
           } else if (status === "FAILED") {
-            setError(data.search.errorMessage ?? "Search failed. Please try again.");
+            setSearch(data.search);
           }
           setSearchLoading(false);
         }
@@ -303,9 +303,6 @@ export default function SearchPage() {
           <AlertCircle className="h-5 w-5 shrink-0 text-destructive" />
           <div>
             <p className="text-sm font-medium text-destructive">{error}</p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Please refine your prompt and try again.
-            </p>
           </div>
         </div>
       )}
@@ -385,7 +382,7 @@ export default function SearchPage() {
           <AlertCircle className="mx-auto h-8 w-8 text-destructive" />
           <h2 className="mt-4 text-lg font-semibold">Search Failed</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            {search?.errorMessage ?? "Something went wrong. Please try again."}
+            {search?.errorMessage ?? error ?? "Search failed. Please try again."}
           </p>
           <Button
             variant="outline"

@@ -1,4 +1,5 @@
 import type { SearchStrategy, BraveWebResult } from "@/schemas/prospecting";
+import { strategyLocation } from "@/lib/search/planner";
 import { searchBraveCached } from "@/lib/search/brave";
 
 function braveCountry(strategy: SearchStrategy) {
@@ -38,4 +39,20 @@ export async function collectBraveResults(strategy: SearchStrategy) {
     }
   }
   return { results: merged, failures };
+}
+
+export async function broadenWebResults(strategy: SearchStrategy, location = "") {
+  const place = strategyLocation(strategy, location);
+  const buyer = strategy.idealCustomerProfiles[0]?.businessTypes[0] ?? strategy.productSummary;
+  const query = `${buyer} ${place}`.trim().slice(0, 180);
+  if (query.length < 2) return [];
+  try {
+    const { results } = await searchBraveCached(query, braveCountry(strategy));
+    return results;
+  } catch (error) {
+    console.error("ApplyVelocity broad web search failed", {
+      message: error instanceof Error ? error.message : "unknown",
+    });
+    return [];
+  }
 }

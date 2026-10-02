@@ -9,6 +9,7 @@ import { qualifyBusiness } from "@/lib/scoring/engine";
 import { braveProspectingEnabled } from "@/lib/search/limits";
 import { buildProspects, type BuiltProspect } from "@/lib/search/pipeline";
 import { usableWebResults } from "@/lib/search/prospects";
+import { broadenWebResults } from "@/lib/search/collect";
 import { searchStrategySchema, qualificationSchema, type ProspectQualification } from "@/schemas/prospecting";
 import type { BraveWebResult, SearchStrategy } from "@/schemas/prospecting";
 import { recordLeadUsage } from "@/lib/usage/service";
@@ -217,7 +218,13 @@ export async function processProviderRun(runId: string): Promise<void> {
     const strategyResult = braveProspectingEnabled()
       ? searchStrategySchema.safeParse(search.search_strategy)
       : null;
-    const webResults = usableWebResults(search.web_results);
+    let webResults = usableWebResults(search.web_results);
+    if (strategyResult?.success && !webResults.length) {
+      const location = typeof search.parsed_query === "object" && search.parsed_query && "location" in search.parsed_query
+        ? String(search.parsed_query.location ?? "")
+        : "";
+      webResults = await broadenWebResults(strategyResult.data, location);
+    }
     const mapsUnavailable = run.status === "FAILED";
     const continueWithWeb = mapsUnavailable && Boolean(strategyResult?.success) && webResults.length > 0;
 
@@ -404,12 +411,14 @@ export async function completeBraveSearch(
   const { data: search } = await database.from("searches").select("*").eq("id", searchId).maybeSingle();
   if (!search || ["COMPLETED", "FAILED"].includes(search.status)) return false;
   const query = businessSearchQuerySchema.parse(search.parsed_query);
-  const prospects = buildProspects([], usableWebResults(webResults), strategy, query.location)
+  let web = usableWebResults(webResults);
+  if (!web.length) web = await broadenWebResults(strategy, query.location);
+  const prospects = buildProspects([], web, strategy, query.location)
     .slice(0, search.requested_result_limit);
   await saveProspecting(
     searchId,
     strategy,
-    webResults,
+    web,
     prospects.length ? null : "No public clients were found for this offer."
   );
   if (!prospects.length) {
