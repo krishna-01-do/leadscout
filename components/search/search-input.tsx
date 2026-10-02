@@ -76,7 +76,7 @@ export function SearchInput({ onSearch, loading, disabled }: SearchInputProps) {
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Describe your business, the service you sell, or the clients you want..."
+          placeholder="What do you sell, and who do you want to sell it to?"
           className="min-h-[100px] resize-none border-2 pr-12 text-base"
           disabled={disabled}
         />
@@ -151,7 +151,7 @@ export function SearchInput({ onSearch, loading, disabled }: SearchInputProps) {
           ) : (
             <>
               <Sparkles className="mr-2 h-4 w-4" />
-              Find Leads
+              Find Clients
             </>
           )}
         </Button>

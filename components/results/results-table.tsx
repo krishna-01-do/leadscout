@@ -67,6 +67,7 @@ export function ResultsTable({ results, onExport, exporting, selectedIds, onSele
   const [filterWebsite, setFilterWebsite] = useState<string>("all");
   const [filterMinScore, setFilterMinScore] = useState<string>("0");
   const [filterFlag, setFilterFlag] = useState<string>("all");
+  const [filterSignal, setFilterSignal] = useState<string>("all");
   const [localSelected, setLocalSelected] = useState<Set<string>>(new Set());
   const [detailRow, setDetailRow] = useState<SearchResultRow | null>(null);
   const [showFilters, setShowFilters] = useState(false);
@@ -101,6 +102,9 @@ export function ResultsTable({ results, onExport, exporting, selectedIds, onSele
       r = r.filter((row) => row.opportunityFlags.includes(filterFlag as OpportunityFlag));
     }
 
+    if (filterSignal === "buying") r = r.filter((row) => row.qualification?.buyingSignal);
+    else if (filterSignal === "fit") r = r.filter((row) => row.qualification && !row.qualification.buyingSignal);
+
     r.sort((a, b) => {
       let cmp = 0;
       if (sortField === "name") {
@@ -116,7 +120,7 @@ export function ResultsTable({ results, onExport, exporting, selectedIds, onSele
     });
 
     return r;
-  }, [results, search, filterWebsite, filterMinScore, filterFlag, sortField, sortDir]);
+  }, [results, search, filterWebsite, filterMinScore, filterFlag, filterSignal, sortField, sortDir]);
 
   const allSelected = filtered.length > 0 && filtered.every((r) => selected.has(r.id));
   const someSelected = filtered.some((r) => selected.has(r.id));
@@ -239,6 +243,20 @@ export function ResultsTable({ results, onExport, exporting, selectedIds, onSele
           </div>
 
           <div className="flex min-w-0 items-center justify-between gap-2 sm:justify-start">
+            <span className="text-xs text-muted-foreground">Signal:</span>
+            <Select value={filterSignal} onValueChange={setFilterSignal}>
+              <SelectTrigger className="h-8 w-36">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="buying">Buying signal</SelectItem>
+                <SelectItem value="fit">Potential fit</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex min-w-0 items-center justify-between gap-2 sm:justify-start">
             <span className="text-xs text-muted-foreground">Flag:</span>
             <Select value={filterFlag} onValueChange={setFilterFlag}>
               <SelectTrigger className="h-8 w-36">
@@ -260,6 +278,7 @@ export function ResultsTable({ results, onExport, exporting, selectedIds, onSele
               setFilterWebsite("all");
               setFilterMinScore("0");
               setFilterFlag("all");
+              setFilterSignal("all");
             }}
             className="h-8"
           >
@@ -388,6 +407,11 @@ export function ResultsTable({ results, onExport, exporting, selectedIds, onSele
                     </td>
                     <td className="p-3">
                       <div className="flex flex-wrap gap-1">
+                        {row.qualification && (
+                          <Badge variant={row.qualification.buyingSignal ? "default" : "outline"} className="text-xs">
+                            {row.qualification.buyingSignal ? "Buying signal" : "Potential fit"}
+                          </Badge>
+                        )}
                         {row.opportunityFlags.slice(0, 2).map((flag) => (
                           <Badge key={flag} variant="secondary" className="text-xs">
                             {flagLabels[flag]}
@@ -454,6 +478,11 @@ export function ResultsTable({ results, onExport, exporting, selectedIds, onSele
                     ) : <Badge variant="outline" className="text-xs text-destructive">No Website</Badge>}
                   </div>
                   <div className="mt-3 flex flex-wrap gap-1">
+                    {row.qualification && (
+                      <Badge variant={row.qualification.buyingSignal ? "default" : "outline"} className="text-xs">
+                        {row.qualification.buyingSignal ? "Buying signal" : "Potential fit"}
+                      </Badge>
+                    )}
                     {row.opportunityFlags.slice(0, 2).map((flag) => <Badge key={flag} variant="secondary" className="text-xs">{flagLabels[flag]}</Badge>)}
                   </div>
                 </div>
@@ -576,9 +605,42 @@ export function ResultsTable({ results, onExport, exporting, selectedIds, onSele
                 </div>
 
                 <div className="rounded-lg bg-muted/50 p-3">
-                  <p className="text-xs text-muted-foreground mb-1">Qualification</p>
-                  <p className="text-sm">{detailRow.qualificationReason}</p>
+                  <p className="text-xs text-muted-foreground mb-1">
+                    {detailRow.qualification?.buyingSignal ? "Buying signal" : detailRow.qualification ? "Potential fit" : "Qualification"}
+                  </p>
+                  <p className="text-sm">{detailRow.qualification?.reason ?? detailRow.qualificationReason}</p>
+                  {detailRow.qualification && (
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      ICP {detailRow.qualification.icpFit}/40 · Signal {detailRow.qualification.painSignal}/40 · Contact {detailRow.qualification.contactability}/20
+                    </p>
+                  )}
                 </div>
+                {detailRow.qualification?.evidence.length ? (
+                  <div className="space-y-2">
+                    <p className="text-sm text-muted-foreground">Evidence</p>
+                    {detailRow.qualification.evidence.map((item) => (
+                      <a key={item.sourceUrl} href={item.sourceUrl} target="_blank" rel="noopener noreferrer" className="block text-sm text-primary hover:underline">
+                        {item.title}
+                      </a>
+                    ))}
+                  </div>
+                ) : null}
+                {detailRow.qualification?.decisionMakerRoles.length ? (
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-2">Decision makers to try</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {detailRow.qualification.decisionMakerRoles.map((role) => (
+                        <Badge key={role} variant="outline">{role}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+                {detailRow.qualification?.suggestedPitch && (
+                  <div className="rounded-lg bg-muted/50 p-3">
+                    <p className="text-xs text-muted-foreground mb-1">Suggested angle</p>
+                    <p className="text-sm">{detailRow.qualification.suggestedPitch}</p>
+                  </div>
+                )}
               </div>
             </>
           )}

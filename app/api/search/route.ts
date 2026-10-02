@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { parseSearchPrompt } from "@/lib/ai/query-parser";
+import { planSearchStrategy } from "@/lib/search/planner";
+import { collectBraveResults } from "@/lib/search/collect";
+import { braveProspectingEnabled } from "@/lib/search/limits";
 import {
   createSearch,
   failSearchAndRefund,
+  saveProspecting,
   startProviderSearch,
 } from "@/lib/services/search-service";
 import { requireUser } from "@/lib/supabase/server";
@@ -98,10 +102,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    let query = merged.data;
+    let strategy = null;
+    if (braveProspectingEnabled()) {
+      strategy = await planSearchStrategy(parsed.data.prompt, merged.data.location);
+      const explicitBuyer = parsed.data.filters.businessCategory.trim();
+      const plannedBuyer = strategy.idealCustomerProfiles[0]?.businessTypes[0] ?? strategy.productSummary;
+      const replanned = businessSearchQuerySchema.safeParse({
+        ...merged.data,
+        businessCategory: explicitBuyer || plannedBuyer,
+        mapsQueries: strategy.mapsQueries,
+      });
+      if (replanned.success) query = replanned.data;
+    }
+
     const created = await createSearch(
       user.id,
       parsed.data.prompt,
-      merged.data,
+      query,
       parsed.data.idempotencyKey
     );
     if (created.quotaExceeded) {
@@ -128,10 +146,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (strategy) {
+      try {
+        const web = await collectBraveResults(strategy);
+        const unavailable = web.failures > 0 && web.results.length === 0;
+        await saveProspecting(
+          created.searchId,
+          strategy,
+          web.results,
+          unavailable ? "Web signal search was unavailable." : null
+        );
+      } catch {
+        await saveProspecting(created.searchId, strategy, [], "Web signal search was unavailable.");
+      }
+    }
+
     return NextResponse.json(
       {
         searchId: created.searchId,
-        parsedQuery: { ...merged.data, resultLimit: created.resultLimit ?? merged.data.resultLimit },
+        parsedQuery: { ...query, resultLimit: created.resultLimit ?? query.resultLimit },
       },
       { status: 202 }
     );

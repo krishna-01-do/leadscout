@@ -21,6 +21,7 @@ export const businessSearchQuerySchema = z.object({
   phoneRequired: z.boolean().default(false),
   emailRequired: z.boolean().default(false),
   keywords: z.array(z.string().trim().min(1).max(60)).max(10).default([]),
+  mapsQueries: z.array(z.string().trim().min(2).max(120)).max(8).default([]),
   resultLimit: z.number().int().min(1).max(50).default(25),
 }).superRefine((query, context) => {
   if (query.minRating !== null && query.maxRating !== null && query.minRating > query.maxRating) {

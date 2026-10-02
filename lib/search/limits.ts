@@ -1,0 +1,18 @@
+export const prospectingLimits = {
+  maxMapQueries: 6,
+  maxBraveQueries: 6,
+  maxBraveResultsPerQuery: 8,
+  maxAiLeadsForDeepAnalysis: 12,
+  braveTimeoutMs: 12_000,
+  braveRetries: 2,
+} as const;
+
+export const scoreWeights = {
+  icp: 40,
+  pain: 40,
+  contact: 20,
+} as const;
+
+export function braveProspectingEnabled() {
+  return process.env.ENABLE_BRAVE_PROSPECTING === "true";
+}

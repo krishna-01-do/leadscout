@@ -2,10 +2,10 @@ import { Loader2 } from "lucide-react";
 import type { SearchStatus } from "@/types";
 
 const stages: { status: SearchStatus; label: string }[] = [
-  { status: "QUEUED", label: "Queued" },
-  { status: "SEARCHING", label: "Finding businesses" },
-  { status: "PROCESSING", label: "Researching prospects" },
-  { status: "SCORING", label: "Qualifying matches" },
+  { status: "QUEUED", label: "Understanding your offer" },
+  { status: "SEARCHING", label: "Searching businesses" },
+  { status: "PROCESSING", label: "Matching companies" },
+  { status: "SCORING", label: "Ranking opportunities" },
   { status: "COMPLETED", label: "Preparing results" },
 ];
 
