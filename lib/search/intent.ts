@@ -49,7 +49,7 @@ export function resultCountFromPrompt(prompt: string): number | null {
   return Math.min(50, Math.max(20, count));
 }
 
-export function minimumResultLimit(value: number) {
-  if (!Number.isFinite(value)) return 25;
+export function minimumResultLimit(value: number | null) {
+  if (value === null || !Number.isFinite(value)) return 25;
   return Math.min(50, Math.max(20, Math.round(value)));
 }
