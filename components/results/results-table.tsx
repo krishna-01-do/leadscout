@@ -412,6 +412,9 @@ export function ResultsTable({ results, onExport, exporting, selectedIds, onSele
                             {row.qualification.buyingSignal ? "Buying signal" : "Potential fit"}
                           </Badge>
                         )}
+                        {(row.business.metadata?.looseMatch === true || row.business.metadata?.broaderMatch === true) && (
+                          <Badge variant="secondary" className="text-xs">Broader match</Badge>
+                        )}
                         {row.opportunityFlags.slice(0, 2).map((flag) => (
                           <Badge key={flag} variant="secondary" className="text-xs">
                             {flagLabels[flag]}
@@ -490,6 +493,9 @@ export function ResultsTable({ results, onExport, exporting, selectedIds, onSele
                       <Badge variant={row.qualification.buyingSignal ? "default" : "outline"} className="text-xs">
                         {row.qualification.buyingSignal ? "Buying signal" : "Potential fit"}
                       </Badge>
+                    )}
+                    {(row.business.metadata?.looseMatch === true || row.business.metadata?.broaderMatch === true) && (
+                      <Badge variant="secondary" className="text-xs">Broader match</Badge>
                     )}
                     {row.opportunityFlags.slice(0, 2).map((flag) => <Badge key={flag} variant="secondary" className="text-xs">{flagLabels[flag]}</Badge>)}
                   </div>
@@ -618,9 +624,14 @@ export function ResultsTable({ results, onExport, exporting, selectedIds, onSele
                   </p>
                   <p className="text-sm">{detailRow.qualification?.reason ?? detailRow.qualificationReason}</p>
                   {detailRow.qualification && (
-                    <p className="mt-2 text-xs text-muted-foreground">
-                      ICP {detailRow.qualification.icpFit}/40 · Signal {detailRow.qualification.painSignal}/40 · Contact {detailRow.qualification.contactability}/20
-                    </p>
+                    <>
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        ICP {detailRow.qualification.icpFit}/40 · Signal {detailRow.qualification.painSignal}/40 · Contact {detailRow.qualification.contactability}/20
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        The displayed match score is normalized; evidence components stay uninflated.
+                      </p>
+                    </>
                   )}
                 </div>
                 {detailRow.qualification?.evidence.length ? (

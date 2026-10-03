@@ -16,10 +16,10 @@ import {
 import { Switch } from "@/components/ui/switch";
 
 const promptChips = [
-  "I build appointment automation for clinics",
-  "I sell review follow-ups to restaurants",
-  "Find gyms that need booking software",
-  "Local clinics for a marketing agency",
+  "Cafes in Hyderabad with no website",
+  "Trucking companies in New York that need inventory software",
+  "Dental clinics in Pune",
+  "Restaurants in London with no website",
 ];
 
 interface AdvancedFilters {
@@ -71,12 +71,21 @@ export function SearchInput({ onSearch, loading, disabled }: SearchInputProps) {
 
   return (
     <div className="space-y-4">
+      <div className="rounded-xl border border-primary/30 bg-primary/5 px-3 py-3 sm:px-4">
+        <p className="text-sm font-medium text-foreground">Write the prompt like this for the best list</p>
+        <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
+          <li>Name the business and the city: “Cafes in Hyderabad with no website”.</li>
+          <li>Or name what you sell and where: “I sell inventory software to trucking companies in New York”.</li>
+          <li>Add a number when you want more than 20: “40 dental clinics in Pune”.</li>
+          <li>Leave the city out and the search still returns at least 20 public matches.</li>
+        </ul>
+      </div>
       <div className="relative">
         <Textarea
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="What do you sell, and who do you want to sell it to?"
+          placeholder="Example: Cafes in Hyderabad with no website"
           className="max-h-48 min-h-[120px] resize-none overflow-y-auto border-2 pr-12 text-base leading-relaxed [overflow-wrap:break-word]"
           disabled={disabled}
         />

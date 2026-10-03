@@ -166,6 +166,41 @@ describe("prospect matching and scoring", () => {
     const quiet = prospects.find((prospect) => prospect.business.name === "Quiet Warehouse");
     expect(quiet?.qualification.buyingSignal).toBe(false);
     expect(quiet?.qualification.reason).toContain("no direct buying signal");
+    expect(prospects.every((prospect) => prospect.qualification.total <= 100)).toBe(true);
+  });
+
+  it("fills a short Maps list up to the requested minimum", () => {
+    const prospects = buildProspects(
+      [business({ name: "One Cafe", category: "Cafe", city: "Hyderabad", website: null })],
+      [
+        {
+          title: "Second Cafe group",
+          url: "https://second-cafe.example",
+          description: "A cafe company",
+          domain: "second-cafe.example",
+          query: "cafe",
+          sourceType: "web",
+          publishedAt: null,
+        },
+        {
+          title: "6 ways cafes find customers",
+          url: "https://blog.example/cafes",
+          description: "A broader public page",
+          domain: "blog.example",
+          query: "cafe",
+          sourceType: "web",
+          publishedAt: null,
+        },
+      ],
+      strategy,
+      "Hyderabad",
+      { allowWebLeads: false, minimum: 3 }
+    );
+    expect(prospects).toHaveLength(3);
+    expect(prospects[0].business.provider).toBe("apify");
+    expect(prospects.slice(1).every((prospect) =>
+      prospect.business.metadata?.looseMatch === true || prospect.business.metadata?.broaderMatch === true
+    )).toBe(true);
   });
 
   it("keeps a Brave-only company when Maps did not return it", () => {
