@@ -7,6 +7,7 @@ import { MockBusinessSearchProvider } from "@/lib/providers/mock-provider";
 import { deduplicateBusinesses } from "@/lib/scoring/dedup";
 import { qualifyBusiness } from "@/lib/scoring/engine";
 import { braveProspectingEnabled } from "@/lib/search/limits";
+import { selectListings } from "@/lib/search/listings";
 import { buildProspects, type BuiltProspect } from "@/lib/search/pipeline";
 import { usableWebResults } from "@/lib/search/prospects";
 import { broadenWebResults } from "@/lib/search/collect";
@@ -252,13 +253,19 @@ export async function processProviderRun(runId: string): Promise<void> {
     const query = businessSearchQuerySchema.parse(search.parsed_query);
     const rawBusinesses = continueWithWeb ? [] : await provider.getResults(run, query);
     const deduped = deduplicateBusinesses(rawBusinesses);
+    const listed = selectListings(deduped, query);
     const strategy = strategyResult;
     const prospects = strategy?.success
-      ? buildProspects(deduped, webResults, strategy.data, query.location).slice(0, search.requested_result_limit)
+      ? buildProspects(listed, webResults, strategy.data, query.location, false).slice(0, search.requested_result_limit)
       : null;
     const businesses = prospects
       ? prospects.map((prospect) => prospect.business)
-      : deduped.slice(0, search.requested_result_limit);
+      : listed;
+    const listingNote = !continueWithWeb && !businesses.length
+      ? deduped.length
+        ? "Google Maps returned places, but none matched the website or contact filter."
+        : "No Google Maps listings were returned for that search."
+      : null;
 
     await updateSearchStatus(searchId, "SCORING");
     const qualified = prospects
@@ -282,9 +289,11 @@ export async function processProviderRun(runId: string): Promise<void> {
 
     await persistResults(searchId, businesses, qualified, qualifications);
     await recordLeadUsage(search.user_id, searchId, qualified.length);
-    if (continueWithWeb) {
+    if (continueWithWeb || listingNote) {
       await database.from("searches").update({
-        prospecting_error: "Business listings were unavailable. These prospects come from public web signals only.",
+        prospecting_error: continueWithWeb
+          ? "Business listings were unavailable. These prospects come from public web signals only."
+          : listingNote,
       }).eq("id", searchId);
     }
     await database.from("provider_runs").update({

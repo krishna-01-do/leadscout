@@ -19,7 +19,8 @@ export function buildProspects(
   maps: NormalizedBusiness[],
   web: BraveWebResult[],
   strategy: SearchStrategy,
-  location: string
+  location: string,
+  allowWebLeads = maps.length === 0
 ): BuiltProspect[] {
   const leads: Array<{ business: NormalizedBusiness; evidence: ProspectEvidence[] }> = maps.map((business) => ({
     business,
@@ -35,6 +36,7 @@ export function buildProspects(
       if (!existing) leads[match.index].evidence.push(evidence);
       continue;
     }
+    if (!allowWebLeads || maps.length > 0) continue;
     const created = webOnlyBusiness(result, strategy.targetMarket.countries[0] ?? null);
     const domain = normalizedDomain(created?.website);
     if (!created || !domain || seen.has(domain)) continue;
@@ -42,7 +44,7 @@ export function buildProspects(
     leads.push({ business: created, evidence: [evidence] });
   }
 
-  if (!leads.length) {
+  if (!leads.length && allowWebLeads) {
     const looseSeen = new Set<string>();
     for (const result of web) {
       const created = looseWebBusiness(result, strategy.targetMarket.countries[0] ?? null);

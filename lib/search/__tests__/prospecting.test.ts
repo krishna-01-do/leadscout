@@ -3,7 +3,10 @@ vi.mock("server-only", () => ({}));
 import { dedupeQueries } from "@/lib/search/queries";
 import { buildProspects } from "@/lib/search/pipeline";
 import { matchWebResult, usableWebResults, webOnlyBusiness } from "@/lib/search/prospects";
+import { buyerFromPrompt, placeFromPrompt, websiteFromPrompt } from "@/lib/search/intent";
+import { selectListings } from "@/lib/search/listings";
 import { fallbackStrategy, strategyLocation } from "@/lib/search/planner";
+import type { BusinessSearchQuery } from "@/types";
 import { searchStrategySchema } from "@/schemas/prospecting";
 import type { NormalizedBusiness } from "@/types";
 
@@ -62,12 +65,51 @@ describe("prospecting queries", () => {
     expect(searchStrategySchema.safeParse(plan).success).toBe(true);
   });
 
+  it("reads a cafe search in Hyderabad from the sentence itself", () => {
+    const prompt = "find cafes in hyderabad which are not having a website";
+    expect(placeFromPrompt(prompt).toLowerCase()).toBe("hyderabad");
+    expect(buyerFromPrompt(prompt).toLowerCase()).toBe("cafes");
+    expect(websiteFromPrompt(prompt)).toBe("MISSING");
+    const plan = fallbackStrategy(prompt, "");
+    expect(plan.needsMaps).toBe(true);
+    expect(plan.targetMarket.cities[0]?.toLowerCase()).toBe("hyderabad");
+    expect(plan.mapsQueries[0]?.toLowerCase()).toContain("cafe");
+  });
+
   it("keeps web search when no location is given and uses an explicit location override", () => {
     const plan = fallbackStrategy("I automate inventory for businesses", "");
     expect(plan.needsMaps).toBe(false);
     expect(plan.webIntentQueries.length).toBeGreaterThan(0);
     expect(strategyLocation(plan, "")).toBe("");
     expect(strategyLocation(plan, "London")).toBe("London");
+  });
+});
+
+describe("listing filters", () => {
+  const query = {
+    businessCategory: "cafe",
+    location: "Hyderabad",
+    city: "Hyderabad",
+    state: null,
+    country: "India",
+    minRating: null,
+    maxRating: null,
+    minReviews: null,
+    maxReviews: null,
+    websiteCondition: "MISSING",
+    phoneRequired: false,
+    emailRequired: false,
+    keywords: [],
+    mapsQueries: ["cafe"],
+    resultLimit: 20,
+  } satisfies BusinessSearchQuery;
+
+  it("keeps cafes without a website and drops ones that have one", () => {
+    const kept = selectListings([
+      business({ name: "No Site Cafe", website: null, city: "Hyderabad", category: "Cafe" }),
+      business({ providerBusinessId: "place-2", name: "Has Site Cafe", website: "https://cafe.example", city: "Hyderabad", category: "Cafe" }),
+    ], query);
+    expect(kept.map((item) => item.name)).toEqual(["No Site Cafe"]);
   });
 });
 
@@ -141,7 +183,7 @@ describe("prospect matching and scoring", () => {
     expect(prospects[0].qualification.sources[0]?.url).toBe("https://harborfoods.example/news");
   });
 
-  it("returns a possible lead when the only page is not a clean company listing", () => {
+  it("does not turn a social list page into a client", () => {
     const prospects = buildProspects([], [{
       title: "Companies hiring inventory managers in New York this month",
       url: "https://www.linkedin.com/jobs/view/123",
@@ -151,10 +193,27 @@ describe("prospect matching and scoring", () => {
       sourceType: "web",
       publishedAt: null,
     }], strategy, "New York");
+    expect(prospects).toHaveLength(0);
+  });
+
+  it("keeps Google Maps businesses and does not add an unmatched blog", () => {
+    const prospects = buildProspects(
+      [business({ name: "Third Wave Coffee", category: "Cafe", city: "Hyderabad", website: null, phone: "+91 40 5555 0101" })],
+      [{
+        title: "6 ways to automate your cafe marketing",
+        url: "https://marketingtips.example/cafe-marketing",
+        description: "A blog about cafes",
+        domain: "marketingtips.example",
+        query: "cafe marketing",
+        sourceType: "web",
+        publishedAt: null,
+      }],
+      strategy,
+      "Hyderabad"
+    );
     expect(prospects).toHaveLength(1);
-    expect(prospects[0].qualification.buyingSignal).toBe(false);
-    expect(prospects[0].qualification.reason).toContain("possible lead");
-    expect(prospects[0].qualification.sources[0]?.url).toBe("https://www.linkedin.com/jobs/view/123");
+    expect(prospects[0].business.name).toBe("Third Wave Coffee");
+    expect(prospects[0].business.provider).toBe("apify");
   });
 
   it("keeps a company site when the page title is a long headline", () => {
