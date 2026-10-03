@@ -1,5 +1,5 @@
 export const prospectingLimits = {
-  maxMapQueries: 6,
+  maxMapQueries: 2,
   maxBraveQueries: 6,
   maxBraveResultsPerQuery: 8,
   maxAiLeadsForDeepAnalysis: 12,

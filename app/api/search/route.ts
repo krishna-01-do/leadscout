@@ -1,5 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { parseSearchPrompt } from "@/lib/ai/query-parser";
+import {
+  buyerFromPrompt,
+  minimumResultLimit,
+  placeFromPrompt,
+  resultCountFromPrompt,
+  websiteFromPrompt,
+} from "@/lib/search/intent";
 import { planSearchStrategy, strategyLocation } from "@/lib/search/planner";
 import { collectBraveResults } from "@/lib/search/collect";
 import { braveProspectingEnabled } from "@/lib/search/limits";
@@ -38,10 +45,12 @@ function applyFilters(
     maxRating: numberOrFallback(filters.maxRating, query.maxRating),
     minReviews: numberOrFallback(filters.minReviews, query.minReviews),
     maxReviews: numberOrFallback(filters.maxReviews, query.maxReviews),
-    websiteCondition: filters.websiteCondition,
-    phoneRequired: filters.phoneRequired,
-    emailRequired: filters.emailRequired,
-    resultLimit: numberOrFallback(filters.resultLimit, query.resultLimit),
+    websiteCondition: filters.websiteCondition === "ANY" ? query.websiteCondition : filters.websiteCondition,
+    phoneRequired: filters.phoneRequired || query.phoneRequired,
+    emailRequired: filters.emailRequired || query.emailRequired,
+    resultLimit: filters.resultLimit.trim() && filters.resultLimit !== "25"
+      ? numberOrFallback(filters.resultLimit, query.resultLimit)
+      : query.resultLimit,
   });
 }
 
@@ -87,8 +96,9 @@ export async function POST(request: NextRequest) {
       : queryFromFilters(parsed.data.filters);
     const explicitBuyer = parsed.data.filters.businessCategory.trim();
     const explicitLocation = parsed.data.filters.location.trim();
+    const hintedPlace = placeFromPrompt(parsed.data.prompt);
     const strategy = braveProspectingEnabled()
-      ? await planSearchStrategy(parsed.data.prompt, explicitLocation)
+      ? await planSearchStrategy(parsed.data.prompt, explicitLocation || hintedPlace)
       : null;
     if (!merged.success && !strategy) {
       return NextResponse.json(
@@ -100,20 +110,29 @@ export async function POST(request: NextRequest) {
     const plannedBuyer = strategy?.idealCustomerProfiles[0]?.businessTypes[0] ?? strategy?.productSummary ?? "";
     const plannedLocation = strategy ? strategyLocation(strategy, "") : "";
     const parsedQuery = merged.success ? merged.data : null;
-    const businessCategory = explicitBuyer || parsedQuery?.businessCategory || plannedBuyer;
-    const location = explicitLocation || parsedQuery?.location || plannedLocation;
+    const hintedBuyer = buyerFromPrompt(parsed.data.prompt);
+    const businessCategory = explicitBuyer || hintedBuyer || plannedBuyer || parsedQuery?.businessCategory || "";
+    const location = explicitLocation || hintedPlace || parsedQuery?.location || plannedLocation;
     const needsMaps = location.trim().length >= 2;
+    const mapTerms = (strategy?.mapsQueries.length ? strategy.mapsQueries : [businessCategory])
+      .map((item) => item.trim())
+      .filter((item) => item.length >= 2)
+      .slice(0, 2);
+    const formLimit = parsed.data.filters.resultLimit.trim();
+    const requestedLimit = formLimit && formLimit !== "25"
+      ? numberOrFallback(formLimit, parsedQuery?.resultLimit ?? 25)
+      : resultCountFromPrompt(parsed.data.prompt) ?? parsedQuery?.resultLimit ?? 25;
     const replanned = businessSearchQuerySchema.safeParse({
       ...(parsedQuery ?? {}),
       businessCategory,
       location,
-      mapsQueries: needsMaps
-        ? (strategy?.mapsQueries.length ? strategy.mapsQueries : [businessCategory].filter((item) => item.trim().length >= 2))
-        : [],
-      websiteCondition: parsedQuery?.websiteCondition ?? parsed.data.filters.websiteCondition,
-      phoneRequired: parsedQuery?.phoneRequired ?? parsed.data.filters.phoneRequired,
-      emailRequired: parsedQuery?.emailRequired ?? parsed.data.filters.emailRequired,
-      resultLimit: parsedQuery?.resultLimit ?? numberOrFallback(parsed.data.filters.resultLimit, 25),
+      mapsQueries: needsMaps ? mapTerms : [],
+      websiteCondition: parsed.data.filters.websiteCondition !== "ANY"
+        ? parsed.data.filters.websiteCondition
+        : websiteFromPrompt(parsed.data.prompt) ?? parsedQuery?.websiteCondition ?? "ANY",
+      phoneRequired: parsed.data.filters.phoneRequired || parsedQuery?.phoneRequired || false,
+      emailRequired: parsed.data.filters.emailRequired || parsedQuery?.emailRequired || false,
+      resultLimit: minimumResultLimit(requestedLimit),
     });
     if (!replanned.success || businessCategory.trim().length < 2 || (needsMaps && location.trim().length < 2)) {
       return NextResponse.json(

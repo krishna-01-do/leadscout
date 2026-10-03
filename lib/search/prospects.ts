@@ -93,6 +93,10 @@ export function evidenceFromResult(result: BraveWebResult): ProspectEvidence {
   };
 }
 
+export function looksLikeArticle(title: string) {
+  return /^\s*\d+\s+\w+/.test(title) || /\b(how to|ways to|guide to|what is|top \d+|best \d+)\b/i.test(title);
+}
+
 function nameFromDomain(domain: string) {
   const brand = domain.split(".")[0]?.replace(/[-_]/g, " ").trim() ?? "";
   if (brand.length < 3 || brand.split(/\s+/).length > 3) return "";
@@ -102,7 +106,7 @@ function nameFromDomain(domain: string) {
 export function webOnlyBusiness(result: BraveWebResult, country: string | null): NormalizedBusiness | null {
   const domain = normalizedDomain(result.url);
   const rootDomain = domain.split(".").slice(-2).join(".");
-  if (!domain || ignoredDomains.has(domain) || ignoredDomains.has(rootDomain)) return null;
+  if (!domain || ignoredDomains.has(domain) || ignoredDomains.has(rootDomain) || looksLikeArticle(result.title)) return null;
   const headline = result.title.split(/[|\-–:]/)[0]?.trim() ?? "";
   const fromTitle = headline.replace(/\b(announces|announced|hiring|is hiring|opens|opening|launches).*/i, "").trim().slice(0, 120);
   const name = fromTitle && fromTitle.split(/\s+/).length <= 8 ? fromTitle : nameFromDomain(domain);
@@ -140,7 +144,7 @@ export function looseWebBusiness(result: BraveWebResult, country: string | null)
   }
   if (url.protocol !== "http:" && url.protocol !== "https:") return null;
   const domain = normalizedDomain(result.url);
-  if (!domain || domain === "google.com" || domain.endsWith(".google.com")) return null;
+  if (!domain || ignoredDomains.has(domain) || domain.endsWith(".google.com") || looksLikeArticle(result.title)) return null;
   const name = result.title.trim().slice(0, 120) || nameFromDomain(domain);
   if (!name) return null;
   return {

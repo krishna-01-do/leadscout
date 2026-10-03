@@ -58,18 +58,26 @@ export class ApifyBusinessSearchProvider implements BusinessSearchProvider {
     }
 
     const location = query.location.trim();
-    const mapQueries = query.mapsQueries?.length ? query.mapsQueries : [query.businessCategory];
-    const searchStrings = mapQueries.map((item) => {
+    const mapQueries = (query.mapsQueries?.length ? query.mapsQueries : [query.businessCategory]).slice(0, 2);
+    const strictFilter = query.websiteCondition === "MISSING"
+      || query.websiteCondition === "MISSING_OR_POOR"
+      || query.phoneRequired
+      || query.emailRequired;
+    const searchStrings = (strictFilter ? mapQueries.slice(0, 1) : mapQueries).map((item) => {
       const queryText = item.trim();
       if (!location || queryText.toLowerCase().includes(location.toLowerCase())) return queryText;
       return `${queryText} in ${location}`;
     });
+    const maxCrawledPlacesPerSearch = Math.min(
+      100,
+      Math.max(query.resultLimit, 20) * (strictFilter ? 3 : 1)
+    );
     const response = await fetch(url, {
       method: "POST",
       headers: { ...authorization(token), "Content-Type": "application/json" },
       body: JSON.stringify({
         searchStringsArray: searchStrings,
-        maxCrawledPlacesPerSearch: Math.max(5, Math.ceil(query.resultLimit / searchStrings.length)),
+        maxCrawledPlacesPerSearch,
         language: "en",
       }),
       signal: AbortSignal.timeout(15_000),
@@ -118,7 +126,7 @@ export class ApifyBusinessSearchProvider implements BusinessSearchProvider {
     const url = new URL(`${APIFY_API_BASE}/datasets/${encodeURIComponent(run.datasetId)}/items`);
     url.searchParams.set("clean", "true");
     url.searchParams.set("format", "json");
-    url.searchParams.set("limit", String(query.resultLimit));
+    url.searchParams.set("limit", String(Math.min(200, Math.max(query.resultLimit, 20) * 4)));
     const response = await fetch(url, {
       headers: authorization(token),
       signal: AbortSignal.timeout(20_000),
@@ -164,9 +172,9 @@ export function normalizeApifyBusiness(row: Record<string, unknown>): Normalized
     country: text(row.countryCode) || text(row.country),
     latitude: number(row.latitude) ?? number(location?.lat),
     longitude: number(row.longitude) ?? number(location?.lng),
-    phone: text(row.phone),
+    phone: text(row.phone) || text(row.phoneUnformatted),
     email: text(row.email),
-    website: safeWebUrl(row.website),
+    website: safeWebUrl(row.website) || safeWebUrl(row.webUrl) || safeWebUrl(row.websiteUrl),
     rating: number(row.totalScore) ?? number(row.rating),
     reviewCount: number(row.reviewsCount) ?? number(row.reviews),
     googleMapsUrl: safeWebUrl(row.url) || safeWebUrl(row.googleMapsUrl),
