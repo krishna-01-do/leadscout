@@ -5,12 +5,12 @@ import { getProvider } from "@/lib/providers";
 import { ApifyBusinessSearchProvider } from "@/lib/providers/apify-provider";
 import { MockBusinessSearchProvider } from "@/lib/providers/mock-provider";
 import { deduplicateBusinesses } from "@/lib/scoring/dedup";
-import { qualifyBusiness } from "@/lib/scoring/engine";
+import { normalizeShownScore, qualifyBusiness } from "@/lib/scoring/engine";
 import { braveProspectingEnabled } from "@/lib/search/limits";
 import { selectListings } from "@/lib/search/listings";
 import { buildProspects, type BuiltProspect } from "@/lib/search/pipeline";
 import { usableWebResults } from "@/lib/search/prospects";
-import { broadenWebResults } from "@/lib/search/collect";
+import { broadenWebResults, collectBroadWebResults } from "@/lib/search/collect";
 import { searchStrategySchema, qualificationSchema, type ProspectQualification } from "@/schemas/prospecting";
 import type { BraveWebResult, SearchStrategy } from "@/schemas/prospecting";
 import { recordLeadUsage } from "@/lib/usage/service";
@@ -254,18 +254,46 @@ export async function processProviderRun(runId: string): Promise<void> {
     const rawBusinesses = continueWithWeb ? [] : await provider.getResults(run, query);
     const deduped = deduplicateBusinesses(rawBusinesses);
     const listed = selectListings(deduped, query);
+    const reserve: NormalizedBusiness[] = deduped
+      .filter((business) => !listed.some((item) => item.providerBusinessId === business.providerBusinessId))
+      .map((business) => ({
+        ...business,
+        metadata: {
+          ...(business.metadata ?? {}),
+          broaderMatch: true,
+        },
+      }));
+    const target = search.requested_result_limit as number;
+    if (strategyResult?.success && listed.length + reserve.length < target) {
+      const broader = await collectBroadWebResults(strategyResult.data, query.location);
+      const seen = new Set(webResults.map((result) => result.url));
+      for (const result of broader) {
+        if (seen.has(result.url)) continue;
+        seen.add(result.url);
+        webResults.push(result);
+      }
+    }
     const strategy = strategyResult;
     const prospects = strategy?.success
-      ? buildProspects(listed, webResults, strategy.data, query.location, false).slice(0, search.requested_result_limit)
+      ? buildProspects(listed, webResults, strategy.data, query.location, {
+          allowWebLeads: false,
+          minimum: target,
+          reserve,
+        }).slice(0, target)
       : null;
     const businesses = prospects
       ? prospects.map((prospect) => prospect.business)
-      : listed;
-    const listingNote = !continueWithWeb && !businesses.length
-      ? deduped.length
+      : [...listed, ...reserve].slice(0, target);
+    const broaderCount = businesses.filter((business) =>
+      business.metadata?.looseMatch === true || business.metadata?.broaderMatch === true
+    ).length;
+    const listingNote = !continueWithWeb && broaderCount > 0
+      ? `${listed.length} exact matches were found. ${broaderCount} broader public matches were added to complete the requested list; verify them before outreach.`
+      : !continueWithWeb && !businesses.length
+        ? deduped.length
         ? "Google Maps returned places, but none matched the website or contact filter."
         : "No Google Maps listings were returned for that search."
-      : null;
+        : null;
 
     await updateSearchStatus(searchId, "SCORING");
     const qualified = prospects
@@ -403,7 +431,7 @@ async function updateSearchStatus(
 function scoreProspects(prospects: BuiltProspect[]): QualifiedResult[] {
   return prospects.map((prospect, index) => ({
     ...prospect.business,
-    matchScore: prospect.qualification.total,
+    matchScore: normalizeShownScore(prospect.qualification.total),
     qualified: prospect.qualification.icpFit >= 20,
     qualificationReason: prospect.qualification.reason,
     opportunityFlags: [],
@@ -420,10 +448,18 @@ export async function completeBraveSearch(
   const { data: search } = await database.from("searches").select("*").eq("id", searchId).maybeSingle();
   if (!search || ["COMPLETED", "FAILED"].includes(search.status)) return false;
   const query = businessSearchQuerySchema.parse(search.parsed_query);
+  const target = search.requested_result_limit as number;
   let web = usableWebResults(webResults);
+  const broader = await collectBroadWebResults(strategy, query.location);
+  const seen = new Set(web.map((result) => result.url));
+  for (const result of broader) {
+    if (seen.has(result.url)) continue;
+    seen.add(result.url);
+    web.push(result);
+  }
   if (!web.length) web = await broadenWebResults(strategy, query.location);
-  const prospects = buildProspects([], web, strategy, query.location)
-    .slice(0, search.requested_result_limit);
+  const prospects = buildProspects([], web, strategy, query.location, { minimum: target, allowWebLeads: true })
+    .slice(0, target);
   await saveProspecting(
     searchId,
     strategy,

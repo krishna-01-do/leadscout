@@ -163,7 +163,7 @@ export function qualifyBusiness(
   query: BusinessSearchQuery,
   rank: number
 ): QualifiedResult {
-  const matchScore = calculateMatchScore(business, query);
+  const matchScore = normalizeShownScore(calculateMatchScore(business, query));
   const opportunityFlags = generateOpportunityFlags(business, query);
   const qualificationReason = generateQualificationReason(business, query, matchScore);
   const qualified = matchScore >= 60;
@@ -176,6 +176,10 @@ export function qualifyBusiness(
     opportunityFlags,
     rank,
   };
+}
+
+export function normalizeShownScore(score: number) {
+  return Math.min(100, Math.max(51, Math.round(score)));
 }
 
 export function getScoreLabel(score: number): { label: string; color: string } {

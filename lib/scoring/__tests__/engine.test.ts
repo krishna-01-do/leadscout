@@ -5,6 +5,7 @@ import {
   generateQualificationReason,
   qualifyBusiness,
   getScoreLabel,
+  normalizeShownScore,
   scoringWeights,
 } from "../engine";
 import type { BusinessSearchQuery, NormalizedBusiness } from "@/types";
@@ -246,6 +247,13 @@ describe("qualifyBusiness", () => {
     const business = makeBusiness({ website: null, rating: 4.5, reviewCount: 120 });
     const result = qualifyBusiness(business, query, 1);
     expect(result.qualified).toBe(true);
+  });
+
+  it("normalizes every displayed score above 50 without exceeding 100", () => {
+    expect(normalizeShownScore(0)).toBe(51);
+    expect(normalizeShownScore(51)).toBe(51);
+    expect(normalizeShownScore(94)).toBe(94);
+    expect(normalizeShownScore(120)).toBe(100);
   });
 });
 
