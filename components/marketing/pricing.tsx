@@ -1,16 +1,26 @@
 import { Check } from "lucide-react";
+import { headers } from "next/headers";
 import { pricing, pricingPlanBenefits, publicPlanKeys, type PricingPlanKey } from "@/lib/branding";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { planDetails } from "@/lib/payments/payu";
+import {
+  currencyForCountry,
+  formatDisplayPrice,
+  loadInrPerUsd,
+  type DisplayCurrency,
+} from "@/lib/pricing/display-currency";
 
-function PlanPrice({ amount }: { amount: string | null }) {
+function shownPrice(amountInr: number | null, currency: DisplayCurrency, inrPerUsd: number) {
+  if (amountInr === null) return "Contact us";
+  return formatDisplayPrice(amountInr, currency, inrPerUsd);
+}
+
+function PlanPrice({ label }: { label: string }) {
   return (
     <div className="mt-3 flex items-baseline gap-1">
-      <span className="text-4xl font-bold tracking-tight sm:text-5xl">
-        {amount ? `₹${Number(amount).toLocaleString("en-IN")}` : "Contact us"}
-      </span>
+      <span className="text-4xl font-bold tracking-tight sm:text-5xl">{label}</span>
       <span className="text-sm text-muted-foreground">/month</span>
     </div>
   );
@@ -31,7 +41,10 @@ function BenefitList({ planKey }: { planKey: PricingPlanKey }) {
   );
 }
 
-export function Pricing() {
+export async function Pricing() {
+  const country = (await headers()).get("x-vercel-ip-country");
+  const currency = currencyForCountry(country);
+  const inrPerUsd = currency === "USD" ? await loadInrPerUsd() : 1;
   const planKeys = [...publicPlanKeys];
 
   const onlyPlan = planKeys.length === 1 ? planKeys[0] : null;
@@ -39,6 +52,7 @@ export function Pricing() {
     const key = onlyPlan;
     const plan = pricing[key];
     const paid = key === "free" ? null : planDetails(key);
+    const amountInr = key === "free" ? 0 : paid ? Number(paid.amount) : null;
     return (
       <section id="pricing" className="py-20 sm:py-28">
         <div className="mx-auto max-w-5xl px-4 sm:px-6">
@@ -59,7 +73,7 @@ export function Pricing() {
                 <div>
                   <Badge>One plan</Badge>
                   <h3 className="mt-4 text-2xl font-semibold">{plan.name}</h3>
-                  <PlanPrice amount={paid?.amount ?? null} />
+                  <PlanPrice label={shownPrice(amountInr, currency, inrPerUsd)} />
                   <p className="mt-4 text-sm leading-6 text-muted-foreground">{plan.value}</p>
                   <Link href="/signup" className="mt-8 block">
                     <Button size="lg" className="w-full">
@@ -95,6 +109,7 @@ export function Pricing() {
           {planKeys.map((key, i) => {
             const plan = pricing[key];
             const paid = key === "free" ? null : planDetails(key);
+            const amountInr = key === "free" ? 0 : paid ? Number(paid.amount) : null;
             return (
               <div
                 key={plan.name}
@@ -112,11 +127,7 @@ export function Pricing() {
                 <h3 className="font-semibold text-lg">{plan.name}</h3>
                 <div className="mt-2 flex items-baseline gap-1">
                   <span className="text-3xl font-bold">
-                    {key === "free"
-                      ? "₹0"
-                      : paid
-                        ? `₹${Number(paid.amount).toLocaleString("en-IN")}`
-                        : "Contact us"}
+                    {shownPrice(amountInr, currency, inrPerUsd)}
                   </span>
                   <span className="text-sm text-muted-foreground">
                     /{key === "free" ? plan.period : "month"}
