@@ -312,13 +312,13 @@ export default function SearchPage() {
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
             <Lock className="h-6 w-6" />
           </div>
-          <h2 className="mt-4 text-lg font-semibold">Choose a plan to search.</h2>
+          <h2 className="mt-4 text-lg font-semibold">Upgrade to keep searching.</h2>
           <p className="mt-1 text-sm text-muted-foreground max-w-sm">
-            Start the monthly plan on Account to find qualified prospects.
+            Your free search has been used. Upgrade to Pro on Account to keep finding prospects.
           </p>
           <Button className="mt-6" onClick={() => router.push("/app/account")}>
             <Sparkles className="mr-2 h-4 w-4" />
-            Upgrade to Continue
+            View Pro Plan
           </Button>
         </div>
       )}

@@ -24,7 +24,7 @@ const faqs = [
   },
   {
     q: "Is there a free trial?",
-    a: "No free searches. Create an account, verify your email or sign up with Google, then start the monthly plan to find prospects.",
+    a: "Yes. Create an account to run one complete search with up to 20 leads—no payment card required. Upgrade to Pro when you need more searches.",
   },
   {
     q: "Will my old searches rerun and cost me credits?",

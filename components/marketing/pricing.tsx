@@ -1,5 +1,5 @@
 import { Check } from "lucide-react";
-import { offeredPlanKeys, pricing, pricingPlanBenefits, type PricingPlanKey } from "@/lib/branding";
+import { pricing, pricingPlanBenefits, publicPlanKeys, type PricingPlanKey } from "@/lib/branding";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
@@ -32,13 +32,13 @@ function BenefitList({ planKey }: { planKey: PricingPlanKey }) {
 }
 
 export function Pricing() {
-  const planKeys = [...offeredPlanKeys];
+  const planKeys = [...publicPlanKeys];
 
   const onlyPlan = planKeys.length === 1 ? planKeys[0] : null;
   if (onlyPlan) {
     const key = onlyPlan;
     const plan = pricing[key];
-    const paid = planDetails(key);
+    const paid = key === "free" ? null : planDetails(key);
     return (
       <section id="pricing" className="py-20 sm:py-28">
         <div className="mx-auto max-w-5xl px-4 sm:px-6">
@@ -87,14 +87,14 @@ export function Pricing() {
             Simple Pricing
           </h2>
           <p className="mt-3 text-muted-foreground">
-            Choose a monthly plan and start finding qualified local prospects.
+            Start free, then upgrade to Pro when you need more searches.
           </p>
         </div>
 
-        <div className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="mx-auto mt-14 grid max-w-4xl gap-6 md:grid-cols-2">
           {planKeys.map((key, i) => {
             const plan = pricing[key];
-            const paid = planDetails(key);
+            const paid = key === "free" ? null : planDetails(key);
             return (
               <div
                 key={plan.name}
@@ -112,9 +112,15 @@ export function Pricing() {
                 <h3 className="font-semibold text-lg">{plan.name}</h3>
                 <div className="mt-2 flex items-baseline gap-1">
                   <span className="text-3xl font-bold">
-                    {paid ? `₹${Number(paid.amount).toLocaleString("en-IN")}` : "Contact us"}
+                    {key === "free"
+                      ? "₹0"
+                      : paid
+                        ? `₹${Number(paid.amount).toLocaleString("en-IN")}`
+                        : "Contact us"}
                   </span>
-                  <span className="text-sm text-muted-foreground">/month</span>
+                  <span className="text-sm text-muted-foreground">
+                    /{key === "free" ? plan.period : "month"}
+                  </span>
                 </div>
 
                 <p className="mt-4 text-sm leading-6 text-muted-foreground">
@@ -135,7 +141,7 @@ export function Pricing() {
                     className="w-full"
                     variant={i === featuredIndex ? "default" : "outline"}
                   >
-                    Get {plan.name}
+                    {key === "free" ? "Start Free" : `Get ${plan.name}`}
                   </Button>
                 </Link>
               </div>

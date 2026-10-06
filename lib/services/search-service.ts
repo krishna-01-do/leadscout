@@ -86,7 +86,7 @@ export async function createSearch(
       searchId: null,
       resultLimit: null,
       error: error.message.includes("subscription_inactive")
-        ? "Choose a plan on the Account page before running a search."
+        ? "Upgrade to Pro on the Account page to keep searching."
         : quotaExceeded
           ? "You've used all your searches or leads for this period. Upgrade to continue."
           : "Failed to create search record.",

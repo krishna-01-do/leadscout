@@ -2,7 +2,7 @@ import "server-only";
 
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 
-const PAID_PLANS = new Set(["basic", "pro", "plus", "starter"]);
+const ACTIVE_PLANS = new Set(["free", "basic", "pro", "plus", "starter"]);
 
 export async function enforceRateLimit(
   userId: string,
@@ -46,7 +46,8 @@ function subscriptionIsActive(subscription: {
   period_end: string;
 }) {
   if (subscription.status !== "active") return false;
-  if (!PAID_PLANS.has(subscription.plan)) return false;
+  if (!ACTIVE_PLANS.has(subscription.plan)) return false;
+  if (subscription.plan === "free") return true;
   const now = Date.now();
   const start = new Date(subscription.period_start).getTime();
   const end = new Date(subscription.period_end).getTime();
@@ -90,14 +91,19 @@ export async function getUsageStats(userId: string) {
     };
   }
 
+  const searchQuery = database.from("usage").select("id", { count: "exact", head: true })
+    .eq("user_id", userId).eq("type", "search");
+  const leadQuery = database.from("usage").select("amount")
+    .eq("user_id", userId).eq("type", "leads");
+  const lifetime = subscription.plan === "free";
   const [{ count: searchesUsed, error: searchError }, { data: leadUsage, error: leadError }] =
     await Promise.all([
-      database.from("usage").select("id", { count: "exact", head: true })
-        .eq("user_id", userId).eq("type", "search")
-        .gte("created_at", subscription.period_start).lte("created_at", subscription.period_end),
-      database.from("usage").select("amount")
-        .eq("user_id", userId).eq("type", "leads")
-        .gte("created_at", subscription.period_start).lte("created_at", subscription.period_end),
+      lifetime
+        ? searchQuery
+        : searchQuery.gte("created_at", subscription.period_start).lte("created_at", subscription.period_end),
+      lifetime
+        ? leadQuery
+        : leadQuery.gte("created_at", subscription.period_start).lte("created_at", subscription.period_end),
     ]);
   if (searchError || leadError) throw new Error("Could not load usage");
 
