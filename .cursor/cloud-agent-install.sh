@@ -36,6 +36,19 @@ text = path.read_text()
 original = text
 if not Path("supabase/seed.sql").exists():
     text, _ = re.subn(r"(\[db\.seed\][^\[]*?enabled = )true", r"\1false", text, count=1)
+
+def ensure_port(src: str, section: str, port: int) -> str:
+    match = re.search(rf"\[{section}\][^\[]*", src)
+    if not match:
+        raise SystemExit(f"missing [{section}] in supabase/config.toml")
+    body = match.group(0)
+    if re.search(r"(?m)^port\s*=", body):
+        return src
+    updated = re.sub(rf"(\[{section}\]\n)", rf"\1port = {port}\n", body, count=1)
+    return src[: match.start()] + updated + src[match.end() :]
+
+text = ensure_port(text, "api", 54321)
+text = ensure_port(text, "db", 54322)
 if text != original:
     path.write_text(text)
 PY
