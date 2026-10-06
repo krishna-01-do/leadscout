@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+export DEBIAN_FRONTEND=noninteractive
+export SUPABASE_TELEMETRY_DISABLED=1
+export SUPABASE_EXPERIMENTAL_STACK=1
+
+NODE_BIN="$(find /home/ubuntu/.nvm/versions/node -mindepth 1 -maxdepth 1 -type d -name 'v22*' | sort -V | tail -1)/bin"
+if [[ ! -x "${NODE_BIN}/npm" ]]; then
+  echo "Node.js 22 was not found under ~/.nvm" >&2
+  exit 1
+fi
+export PATH="${NODE_BIN}:${PATH}"
+
+cd /workspace
+npm ci
+
+SUPABASE_VERSION="2.120.0-beta.12"
+if ! command -v supabase >/dev/null 2>&1 || [[ "$(supabase --version | tr -d '[:space:]')" != "${SUPABASE_VERSION}" ]]; then
+  tmp="$(mktemp --suffix .deb)"
+  curl -fsSL -o "$tmp" "https://github.com/supabase/cli/releases/download/v${SUPABASE_VERSION}/supabase_${SUPABASE_VERSION}_linux_amd64.deb"
+  sudo dpkg -i "$tmp"
+  rm -f "$tmp"
+fi
+
+if [[ ! -f supabase/config.toml ]]; then
+  supabase init --yes
+fi
+
+python3 - <<'PY'
+import re
+from pathlib import Path
+
+path = Path("supabase/config.toml")
+text = path.read_text()
+original = text
+if not Path("supabase/seed.sql").exists():
+    text, _ = re.subn(r"(\[db\.seed\][^\[]*?enabled = )true", r"\1false", text, count=1)
+if text != original:
+    path.write_text(text)
+PY
+
+# Download the native Postgres, Auth, and REST artifacts. Services stay stopped.
+supabase stack prepare --runtime native \
+  --capability database \
+  --capability rest \
+  --capability auth
+
+sudo apt-get update
+sudo apt-get install -y postgresql-client
+hash -r
+if [[ -e /usr/local/bin/psql ]]; then
+  sudo rm -f /usr/local/bin/psql
+fi
