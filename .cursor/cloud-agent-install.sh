@@ -59,6 +59,29 @@ supabase stack prepare --runtime native \
   --capability rest \
   --capability auth
 
+# A previous local experiment replaced the portable psql launcher with a script
+# that execs itself. Database migrations then hang. Restore the upstream launcher
+# when the real binary is still beside it.
+python3 - <<'PY'
+from pathlib import Path
+
+root = Path.home() / ".supabase/cache/stack/slim-services/postgres"
+for psql in root.glob("*/linux-amd64/bin/psql"):
+    bindir = psql.parent
+    real = bindir / ".psql-portable-real"
+    initdb = bindir / "initdb"
+    if not real.is_file() or not initdb.is_file():
+        continue
+    text = psql.read_text(errors="replace")
+    if ".psql-portable-real" in text:
+        continue
+    template = initdb.read_text()
+    if ".initdb-portable-real" not in template:
+        raise SystemExit(f"cannot restore psql launcher from {initdb}")
+    psql.write_text(template.replace(".initdb-portable-real", ".psql-portable-real"))
+    psql.chmod(0o755)
+PY
+
 sudo apt-get update
 sudo apt-get install -y postgresql-client
 hash -r
