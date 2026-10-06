@@ -8,6 +8,21 @@ export const branding = {
 } as const;
 
 export const pricing = {
+  free: {
+    name: "Free",
+    period: "forever",
+    searches: 1,
+    leads: 20,
+    monthlyLeads: 20,
+    value:
+      "Run one complete client search and see how ApplyVelocity turns a prompt into an outreach-ready list.",
+    features: [
+      "Search Google Maps and public web sources",
+      "Rank prospects with opportunity scores",
+      "Export your results to CSV",
+      "Revisit your saved results without another search",
+    ],
+  },
   basic: {
     name: "Basic",
     period: "month",
@@ -57,9 +72,12 @@ export const pricing = {
 } as const;
 
 export type PricingPlanKey = keyof typeof pricing;
-export type PaidPlanKey = PricingPlanKey;
+export type PaidPlanKey = Exclude<PricingPlanKey, "free">;
 
-// Public offer. Uncomment a key to sell that plan again.
+// Plans displayed publicly.
+export const publicPlanKeys = ["free", "pro"] as const satisfies readonly PricingPlanKey[];
+
+// Paid checkout offer. Uncomment a key to sell that paid plan again.
 export const offeredPlanKeys = [
   // "basic",
   "pro",
@@ -68,6 +86,13 @@ export const offeredPlanKeys = [
 
 export function pricingPlanBenefits(key: PricingPlanKey) {
   const plan = pricing[key];
+  if (key === "free") {
+    return [
+      `${plan.searches} full search`,
+      `Up to ${plan.leads} leads`,
+      ...plan.features,
+    ];
+  }
   return [
     `${plan.searches} searches per month`,
     `Up to ${plan.leads} leads per search`,
@@ -77,10 +102,11 @@ export function pricingPlanBenefits(key: PricingPlanKey) {
 }
 
 export function planDisplayName(plan: string | null | undefined) {
+  if (plan === "free") return "Free";
   if (plan === "basic") return "Basic";
   if (plan === "pro") return "Pro";
   if (plan === "plus") return "Plus";
   if (plan === "starter") return "Pro";
-  if (plan === "free" || plan === "none" || !plan) return "No active plan";
+  if (plan === "none" || !plan) return "No active plan";
   return plan;
 }

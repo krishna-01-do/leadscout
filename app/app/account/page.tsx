@@ -142,6 +142,7 @@ export default function AccountPage() {
   }
 
   const hasActivePlan = Boolean(stats?.hasActivePlan);
+  const isFreePlan = hasActivePlan && stats?.plan === "free";
   const planName = planDisplayName(hasActivePlan ? stats?.plan : "none");
   const searchLimit = hasActivePlan ? stats?.searchLimit ?? 0 : 0;
   const searchesUsed = hasActivePlan ? stats?.searchesUsed ?? 0 : 0;
@@ -206,11 +207,12 @@ export default function AccountPage() {
               </div>
             </div>
 
-            {hasActivePlan && periodLabel && (
+            {hasActivePlan && !isFreePlan && periodLabel && (
               <div className="flex items-center gap-3 rounded-xl border border-border/60 bg-muted/30 px-3 py-3">
                 <CalendarDays className="h-4 w-4 text-primary" />
                 <p className="text-xs text-muted-foreground">
-                  Current period ends <span className="font-medium text-foreground">{periodLabel}</span>.
+                  Current period ends{" "}
+                  <span className="font-medium text-foreground">{periodLabel}</span>.
                   Renew before then to keep searching without interruption.
                 </p>
               </div>
@@ -220,7 +222,9 @@ export default function AccountPage() {
         </div>
 
         <div className="premium-card p-5 sm:p-6">
-          <h2 className="text-sm font-medium text-muted-foreground">Usage This Period</h2>
+          <h2 className="text-sm font-medium text-muted-foreground">
+            {isFreePlan ? "Free allowance" : "Usage This Period"}
+          </h2>
 
           {loading ? (
             <div className="flex items-center justify-center py-10">
@@ -282,14 +286,19 @@ export default function AccountPage() {
           <div className="mx-auto max-w-3xl text-center">
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-background/80 px-3 py-1 text-xs font-medium text-primary">
               <Sparkles className="h-3.5 w-3.5" />
-              {hasActivePlan ? "Renew your plan" : "One monthly plan"}
+              {isFreePlan ? "Upgrade to Pro" : hasActivePlan ? "Renew your plan" : "Free + Pro"}
             </div>
             <h2 className="mt-4 text-xl font-bold tracking-tight sm:text-3xl">
-              {hasActivePlan ? "Keep your prospecting capacity active" : "Start finding clients"}
+              {isFreePlan
+                ? "Need more searches? Move up to Pro"
+                : hasActivePlan
+                  ? "Keep your prospecting capacity active"
+                  : "Start free, then upgrade when ready"}
             </h2>
             <p className="mt-2 text-sm text-muted-foreground sm:text-base">
-              Plans are billed monthly. When the period ends, renew to refresh your search and lead quota.
-              Automatic recurring billing is not charged.
+              {isFreePlan
+                ? "Your free plan includes one search with up to 20 leads. Pro adds 30 searches and up to 1,500 leads every 30 days."
+                : "Pro is billed for 30 days. Renew manually when the period ends; automatic recurring billing is not charged."}
             </p>
           </div>
 

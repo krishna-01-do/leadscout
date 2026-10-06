@@ -109,7 +109,7 @@ export default function SignupPage() {
           <>
             <h1 className="text-xl font-semibold">Create your account</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Verify your email, then start the monthly plan to search.
+              Verify your email, then run your free search with up to 20 leads.
             </p>
 
             <div className="mt-6 space-y-4">
