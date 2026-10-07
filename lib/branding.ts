@@ -1,6 +1,6 @@
 export const branding = {
   name: "ApplyVelocity",
-  tagline: "Find the clients most ready to buy.",
+  tagline: "Find the clients most ready to buy",
   description:
     "Describe what you sell. ApplyVelocity scans Google Maps, Google, LinkedIn, Reddit, blogs, news, and company sites, then ranks the clients most likely to convert.",
   domain: "www.applyvelocity.com",

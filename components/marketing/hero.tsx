@@ -59,7 +59,7 @@ export function Hero() {
         <h1 className="font-display animate-fade-in-up text-balance text-4xl leading-[1.05] tracking-tight text-white sm:text-6xl md:text-7xl" style={{ animationDelay: "0.05s" }}>
           Find the clients
           <br />
-          <span className="italic text-cyan-300">most ready to buy.</span>
+          <span className="italic text-cyan-300">most ready to buy</span>
         </h1>
 
         <p className="mx-auto mt-6 max-w-2xl text-balance text-base text-cyan-50/75 animate-fade-in-up sm:text-lg" style={{ animationDelay: "0.1s" }}>
