@@ -4,6 +4,8 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers";
 import { AppNavbar } from "@/components/layout/app-navbar";
+import { trackMetaLead } from "@/lib/analytics/meta-pixel";
+import { hasVerifiedEmail } from "@/lib/auth/verified";
 import { Loader2 } from "lucide-react";
 
 function ProtectedLayout({ children }: { children: React.ReactNode }) {
@@ -15,6 +17,16 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
       router.push("/login");
     }
   }, [loading, user, router]);
+
+  useEffect(() => {
+    if (!user || !hasVerifiedEmail(user)) return;
+    trackMetaLead({
+      id: user.id,
+      createdAt: user.created_at,
+      confirmedAt: user.email_confirmed_at,
+      verified: true,
+    });
+  }, [user]);
 
   if (loading) {
     return (

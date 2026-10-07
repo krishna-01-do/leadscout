@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { trackMetaPurchase } from "@/lib/analytics/meta-pixel";
+import { trackMetaLead, trackMetaPurchase } from "@/lib/analytics/meta-pixel";
 
 function mockWindow(fbq: ReturnType<typeof vi.fn>) {
   const store = new Map<string, string>();
@@ -13,6 +13,75 @@ function mockWindow(fbq: ReturnType<typeof vi.fn>) {
   vi.stubGlobal("window", { fbq, sessionStorage });
   return sessionStorage;
 }
+
+describe("trackMetaLead", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  function mockLeadWindow(fbq?: ReturnType<typeof vi.fn>) {
+    const store = new Map<string, string>();
+    vi.stubGlobal("window", {
+      fbq,
+      localStorage: {
+        getItem: (key: string) => store.get(key) ?? null,
+        setItem: (key: string, value: string) => {
+          store.set(key, value);
+        },
+      },
+    });
+  }
+
+  it("fires Lead once after Google sign-in", () => {
+    const fbq = vi.fn();
+    mockLeadWindow(fbq);
+    const createdAt = new Date().toISOString();
+
+    expect(trackMetaLead({ id: "user-1", createdAt, verified: true })).toBe(true);
+    expect(fbq).toHaveBeenCalledWith(
+      "track",
+      "Lead",
+      { content_name: "signup" },
+      { eventID: "user-1" }
+    );
+    expect(trackMetaLead({ id: "user-1", createdAt, verified: true })).toBe(false);
+    expect(fbq).toHaveBeenCalledTimes(1);
+  });
+
+  it("counts a lead when the email is confirmed, even if signup was earlier", () => {
+    const fbq = vi.fn();
+    mockLeadWindow(fbq);
+
+    expect(trackMetaLead({
+      id: "user-1",
+      createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+      confirmedAt: new Date().toISOString(),
+      verified: true,
+    })).toBe(true);
+    expect(fbq).toHaveBeenCalledTimes(1);
+  });
+
+  it("skips an email account until the address is confirmed", () => {
+    const fbq = vi.fn();
+    mockLeadWindow(fbq);
+
+    expect(trackMetaLead({
+      id: "user-1",
+      createdAt: new Date().toISOString(),
+      verified: false,
+    })).toBe(false);
+    expect(fbq).not.toHaveBeenCalled();
+  });
+
+  it("skips an older confirmed account", () => {
+    const fbq = vi.fn();
+    mockLeadWindow(fbq);
+    const confirmedAt = new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString();
+
+    expect(trackMetaLead({ id: "user-1", createdAt: confirmedAt, confirmedAt, verified: true })).toBe(false);
+    expect(fbq).not.toHaveBeenCalled();
+  });
+});
 
 describe("trackMetaPurchase", () => {
   afterEach(() => {
