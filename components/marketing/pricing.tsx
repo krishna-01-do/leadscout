@@ -57,10 +57,7 @@ export async function Pricing() {
       <section id="pricing" className="py-20 sm:py-28">
         <div className="mx-auto max-w-5xl px-4 sm:px-6">
           <div className="text-center">
-            <p className="section-kicker">Pricing</p>
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Simple Pricing
-            </h2>
+            <h2 className="text-4xl tracking-tight sm:text-5xl">Pricing</h2>
             <p className="mt-3 text-muted-foreground">
               One monthly plan. Describe what you sell and start finding clients.
             </p>
@@ -96,10 +93,7 @@ export async function Pricing() {
     <section id="pricing" className="py-20 sm:py-28">
       <div className="mx-auto max-w-5xl px-4 sm:px-6">
         <div className="text-center">
-          <p className="section-kicker">Pricing</p>
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Simple Pricing
-          </h2>
+          <h2 className="text-4xl tracking-tight sm:text-5xl">Pricing</h2>
           <p className="mt-3 text-muted-foreground">
             Start free, then upgrade to Pro when you need more searches.
           </p>
