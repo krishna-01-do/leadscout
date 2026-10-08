@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { signupJustCompleted } from "@/lib/analytics/meta-pixel";
+import { hasVerifiedEmail } from "@/lib/auth/verified";
 
 function safeRedirectPath(next: string | null) {
   if (!next || !next.startsWith("/") || next.startsWith("//")) return "/app/account";
@@ -24,13 +26,12 @@ export async function GET(request: Request) {
     return NextResponse.redirect(new URL("/login?error=auth_config", origin));
   }
 
-  const response = NextResponse.redirect(new URL(next, origin));
-  response.cookies.set("av_auth_next", "", { path: "/", maxAge: 0 });
+  const cookieUpdates: { name: string; value: string; options?: Parameters<NextResponse["cookies"]["set"]>[2] }[] = [];
   const supabase = createServerClient(supabaseUrl, anonKey, {
     cookies: {
       getAll: () => cookieStore.getAll(),
       setAll(items) {
-        items.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
+        items.forEach((item) => cookieUpdates.push(item));
       },
     },
   });
@@ -40,5 +41,14 @@ export async function GET(request: Request) {
     return NextResponse.redirect(new URL("/login?error=auth_callback", origin));
   }
 
+  const { data: { user } } = await supabase.auth.getUser();
+  const destination = new URL(next, origin);
+  if (user && hasVerifiedEmail(user) && signupJustCompleted(user)) {
+    destination.searchParams.set("signup", "1");
+  }
+
+  const response = NextResponse.redirect(destination);
+  cookieUpdates.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
+  response.cookies.set("av_auth_next", "", { path: "/", maxAge: 0 });
   return response;
 }

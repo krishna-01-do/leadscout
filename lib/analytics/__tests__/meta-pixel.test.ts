@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { trackMetaLead, trackMetaPurchase } from "@/lib/analytics/meta-pixel";
+import { signupJustCompleted, trackMetaLead, trackMetaPurchase } from "@/lib/analytics/meta-pixel";
 
 function mockWindow(fbq: ReturnType<typeof vi.fn>) {
   const store = new Map<string, string>();
@@ -32,54 +32,26 @@ describe("trackMetaLead", () => {
     });
   }
 
-  it("fires Lead once after Google sign-in", () => {
+  it("fires the standard Lead event once for a completed signup", () => {
     const fbq = vi.fn();
     mockLeadWindow(fbq);
-    const createdAt = new Date().toISOString();
 
-    expect(trackMetaLead({ id: "user-1", createdAt, verified: true })).toBe(true);
-    expect(fbq).toHaveBeenCalledWith(
-      "track",
-      "Lead",
-      { content_name: "signup" },
-      { eventID: "user-1" }
-    );
-    expect(trackMetaLead({ id: "user-1", createdAt, verified: true })).toBe(false);
+    expect(trackMetaLead("user-1")).toBe(true);
+    expect(fbq).toHaveBeenCalledWith("trackSingle", "2106522826925737", "Lead");
+    expect(trackMetaLead("user-1")).toBe(false);
     expect(fbq).toHaveBeenCalledTimes(1);
   });
 
-  it("counts a lead when the email is confirmed, even if signup was earlier", () => {
-    const fbq = vi.fn();
-    mockLeadWindow(fbq);
-
-    expect(trackMetaLead({
-      id: "user-1",
-      createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-      confirmedAt: new Date().toISOString(),
-      verified: true,
-    })).toBe(true);
-    expect(fbq).toHaveBeenCalledTimes(1);
-  });
-
-  it("skips an email account until the address is confirmed", () => {
-    const fbq = vi.fn();
-    mockLeadWindow(fbq);
-
-    expect(trackMetaLead({
-      id: "user-1",
-      createdAt: new Date().toISOString(),
-      verified: false,
-    })).toBe(false);
-    expect(fbq).not.toHaveBeenCalled();
-  });
-
-  it("skips an older confirmed account", () => {
-    const fbq = vi.fn();
-    mockLeadWindow(fbq);
-    const confirmedAt = new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString();
-
-    expect(trackMetaLead({ id: "user-1", createdAt: confirmedAt, confirmedAt, verified: true })).toBe(false);
-    expect(fbq).not.toHaveBeenCalled();
+  it("treats a just-confirmed email as a completed signup", () => {
+    const now = Date.parse("2026-10-08T12:00:00.000Z");
+    expect(signupJustCompleted({
+      created_at: "2026-10-07T12:00:00.000Z",
+      email_confirmed_at: "2026-10-08T11:50:00.000Z",
+    }, now)).toBe(true);
+    expect(signupJustCompleted({
+      created_at: "2026-01-01T00:00:00.000Z",
+      email_confirmed_at: "2026-01-01T00:05:00.000Z",
+    }, now)).toBe(false);
   });
 });
 

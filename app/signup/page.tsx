@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { branding } from "@/lib/branding";
 import { recordAuthActivity } from "@/lib/auth/inactivity";
 import { hasVerifiedEmail } from "@/lib/auth/verified";
+import { trackMetaLead } from "@/lib/analytics/meta-pixel";
 import { GoogleAuthButton } from "@/components/auth/google-auth-button";
 
 function emailRedirectTo() {
@@ -69,6 +70,7 @@ export default function SignupPage() {
 
     if (data.session && data.user && hasVerifiedEmail(data.user)) {
       recordAuthActivity(data.session.user.id);
+      trackMetaLead(data.user.id);
       router.push("/app/account");
       return;
     }
