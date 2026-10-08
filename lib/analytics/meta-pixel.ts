@@ -12,12 +12,21 @@ type MetaPurchaseInput = {
 
 declare global {
   interface Window {
-    fbq?: (
-      command: string,
-      eventName: string,
-      params?: Record<string, unknown>,
-      options?: { eventID?: string }
-    ) => void;
+    fbq?: {
+      (
+        command: "trackSingle",
+        pixelId: string,
+        eventName: string,
+        params?: Record<string, unknown>,
+        options?: { eventID?: string }
+      ): void;
+      (
+        command: string,
+        eventName: string,
+        params?: Record<string, unknown>,
+        options?: { eventID?: string }
+      ): void;
+    };
   }
 }
 
