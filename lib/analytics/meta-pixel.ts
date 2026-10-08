@@ -1,6 +1,7 @@
 const STORAGE_PREFIX = "applyvelocity:meta-purchase:";
 const LEAD_STORAGE_PREFIX = "applyvelocity:meta-lead:";
-const LEAD_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
+const META_PIXEL_ID = "2106522826925737";
+const SIGNUP_LEAD_WINDOW_MS = 30 * 60 * 1000;
 
 type MetaPurchaseInput = {
   txnid: string;
@@ -11,12 +12,21 @@ type MetaPurchaseInput = {
 
 declare global {
   interface Window {
-    fbq?: (
-      command: string,
-      eventName: string,
-      params?: Record<string, unknown>,
-      options?: { eventID?: string }
-    ) => void;
+    fbq?: {
+      (
+        command: "trackSingle",
+        pixelId: string,
+        eventName: string,
+        params?: Record<string, unknown>,
+        options?: { eventID?: string }
+      ): void;
+      (
+        command: string,
+        eventName: string,
+        params?: Record<string, unknown>,
+        options?: { eventID?: string }
+      ): void;
+    };
   }
 }
 
@@ -25,31 +35,29 @@ function purchaseValue(value: number | string) {
   return Number.isFinite(amount) && amount > 0 ? amount : null;
 }
 
-export function trackMetaLead(input: {
-  id: string;
-  createdAt?: string | null;
-  confirmedAt?: string | null;
-  verified: boolean;
-}) {
-  if (typeof window === "undefined" || !input.verified || !input.id) return false;
-  const qualifiedAt = Date.parse(input.confirmedAt || input.createdAt || "");
-  if (!Number.isFinite(qualifiedAt) || Date.now() - qualifiedAt > LEAD_WINDOW_MS) return false;
+function recent(value: string | null | undefined, now: number) {
+  const time = Date.parse(value ?? "");
+  return Number.isFinite(time) && now - time >= 0 && now - time <= SIGNUP_LEAD_WINDOW_MS;
+}
 
-  const storageKey = `${LEAD_STORAGE_PREFIX}${input.id}`;
+export function signupJustCompleted(
+  user: { created_at?: string | null; email_confirmed_at?: string | null },
+  now = Date.now(),
+) {
+  return recent(user.email_confirmed_at, now) || recent(user.created_at, now);
+}
+
+export function trackMetaLead(userId: string) {
+  if (typeof window === "undefined" || !userId || typeof window.fbq !== "function") return false;
+
+  const storageKey = `${LEAD_STORAGE_PREFIX}${userId}`;
   try {
     if (window.localStorage.getItem(storageKey) === "1") return false;
   } catch {
     // Ignore storage failures and still attempt to send the event once.
   }
 
-  if (typeof window.fbq !== "function") return false;
-
-  window.fbq(
-    "track",
-    "Lead",
-    { content_name: "signup" },
-    { eventID: input.id }
-  );
+  window.fbq("trackSingle", META_PIXEL_ID, "Lead");
 
   try {
     window.localStorage.setItem(storageKey, "1");

@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PaymentPlanOptions } from "@/components/payments/payment-plan-options";
 import { ProfileEditor } from "@/components/account/profile-editor";
-import { trackMetaPurchase } from "@/lib/analytics/meta-pixel";
+import { trackMetaLead, trackMetaPurchase } from "@/lib/analytics/meta-pixel";
 import { planDisplayName } from "@/lib/branding";
 
 type AccountStats = {
@@ -41,6 +41,15 @@ export default function AccountPage() {
   const [loading, setLoading] = useState(true);
   const [signingOut, setSigningOut] = useState(false);
   const [paymentNotice, setPaymentNotice] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("signup") !== "1") return;
+    trackMetaLead(user.id);
+    url.searchParams.delete("signup");
+    window.history.replaceState(window.history.state, "", `${url.pathname}${url.search}${url.hash}`);
+  }, [user?.id]);
 
   useEffect(() => {
     const payment = new URLSearchParams(window.location.search).get("payment");
